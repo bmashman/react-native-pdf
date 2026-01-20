@@ -1,4 +1,4 @@
-export default PSPDFKitView;
+export default NutrientView;
 /**
  * @typedef InstantDocumentData
  * @property { string } jwt The JWT received as part of the web response.
@@ -8,7 +8,7 @@ export default PSPDFKitView;
  * @typedef InstantConfiguration
  * @property { boolean } enableInstantComments Specifies whether adding comment annotations is allowed.
  * @property { boolean } listenToServerChanges Automatically listen for and sync changes from the server.
- * @property { number } delay Delay in seconds before kicking off automatic sync after local changes are made to the ```editableDocument```’s annotations.
+ * @property { number } delay Delay in seconds before kicking off automatic sync after local changes are made to the ```editableDocument```'s annotations.
  * @property { boolean } syncAnnotations Specifies whether added annotations are automatically synced to the server.
  */
 /**
@@ -18,64 +18,64 @@ export default PSPDFKitView;
  * @property { boolean } isEncrypted Indicates if the PDF document is encrypted (password protected).
  */
 /**
- * PSPDFKit is a React Native {@link https://reactnative.dev/docs/native-modules-intro|Native Module} implementation used to call iOS and Android methods directly.
+ * Nutrient is a React Native {@link https://reactnative.dev/docs/native-modules-intro|Native Module} implementation used to call iOS and Android methods directly.
  * @hideconstructor
  * @example
- * const PSPDFKit = NativeModules.PSPDFKit;
+ * const Nutrient = NativeModules.Nutrient;
  */
-export class PSPDFKit {
+export class Nutrient {
     /**
-     * Used to get the current version of the underlying PSPDFKit SDK.
+     * Used to get the current version of the underlying Nutrient SDK.
      * @member versionString
-     * @memberof PSPDFKit
+     * @memberof Nutrient
      * @type { string }
      * @example
-     * const version = PSPDFKit.versionString
+     * const version = Nutrient.versionString
      */
     versionString: string;
     /**
      * Used to get the document properties of the specified document.
      * @method getDocumentProperties
-     * @memberof PSPDFKit
+     * @memberof Nutrient
      * @param { string } documentPath The path to the document.
      * @returns { PDFDocumentProperties } The document properties.
      * @example
-     * const properties = PSPDFKit.getDocumentProperties('path/to/document.pdf');
+     * const properties = Nutrient.getDocumentProperties('path/to/document.pdf');
      */
     getDocumentProperties: (documentPath: string) => PDFDocumentProperties;
     /**
-     * Used to set your PSPDFKit license key for the active platform only, either iOS or Android.
-     * PSPDFKit is commercial software.
-     * Each PSPDFKit license is bound to a specific app bundle ID.
+     * Used to set your Nutrient license key for the active platform only, either iOS or Android.
+     * Nutrient is commercial software.
+     * Each Nutrient license is bound to a specific app bundle ID.
      * Visit {@link https://my.nutrient.io} to get your demo or commercial license key.
      * @method setLicenseKey
-     * @memberof PSPDFKit
-     * @param { string | null } [key] Your PSPDFKit for React Native iOS or PSPDFKit for React Native Android license key.
-     * @returns { Promise<boolean> } A promise returning ```true``` if the license key was set, and ```false``` if not.
+     * @memberof Nutrient
+     * @param { string | null } [key] Your Nutrient for React Native iOS or Nutrient for React Native Android license key.
+     * @returns { boolean } A boolean returning ```true``` if the license key was set, and ```false``` if not.
      * @example
-     * PSPDFKit.setLicenseKey('YOUR_LICENSE_KEY');
+     * Nutrient.setLicenseKey('YOUR_LICENSE_KEY');
      */
-    setLicenseKey: (key?: string | null) => Promise<boolean>;
+    setLicenseKey: (key?: string | null) => boolean;
     /**
-     * Used to set the your PSPDFKit license keys for both platforms.
-     * PSPDFKit is commercial software.
-     * Each PSPDFKit license is bound to a specific app bundle ID.
+     * Used to set the your Nutrient license keys for both platforms.
+     * Nutrient is commercial software.
+     * Each Nutrient license is bound to a specific app bundle ID.
      * Visit {@link https://my.nutrient.io} to get your demo or commercial license key.
      * @method setLicenseKeys
-     * @memberof PSPDFKit
-     * @param { string | null } [androidKey] Your PSPDFKit for React Native Android license key.
-     * @param { string | null } [iosKey] Your PSPDFKit for React Native iOS license key.
-     * @returns { Promise<boolean> } A promise returning ```true``` if the license keys were set, and ```false``` if not.
+     * @memberof Nutrient
+     * @param { string | null } [androidKey] Your Nutrient for React Native Android license key.
+     * @param { string | null } [iosKey] Your Nutrient for React Native iOS license key.
+     * @returns { boolean } A boolean returning ```true``` if the license key was set, and ```false``` if not.
      * @example
-     * PSPDFKit.setLicenseKeys('YOUR_ANDROID_LICENSE_KEY', 'YOUR_IOS_LICENSE_KEY');
+     * Nutrient.setLicenseKeys('YOUR_ANDROID_LICENSE_KEY', 'YOUR_IOS_LICENSE_KEY');
      */
-    setLicenseKeys: (androidKey?: string | null, iosKey?: string | null) => Promise<boolean>;
+    setLicenseKeys: (androidKey?: string | null, iosKey?: string | null) => boolean;
     /**
      * Used to present a PDF document.
      * @method present
-     * @memberof PSPDFKit
+     * @memberof Nutrient
      * @param { string } documentPath The path to the PDF document to be presented.
-     * @param { PDFConfiguration } configuration Configuration object to customize the appearance and behavior of PSPDFKit. See {@link https://pspdfkit.com/api/react-native/PDFConfiguration.html} for available options.
+     * @param { PDFConfiguration } configuration Configuration object to customize the appearance and behavior of Nutrient. See {@link https://nutrient.io/api/react-native/PDFConfiguration.html} for available options.
      * @returns { Promise<boolean> } A promise returning ```true``` if the document was successfully presented, and ```false``` if not.
      * @example
      * const fileName = 'document.pdf';
@@ -90,41 +90,41 @@ export class PSPDFKit {
      *    pageTransition: PDFConfiguration.PageTransition.SCROLL_CONTINUOUS
      * };
      *
-     * PSPDFKit.present(exampleDocumentPath, configuration);
+     * Nutrient.present(exampleDocumentPath, configuration);
      */
     present: (documentPath: string, configuration: PDFConfiguration) => Promise<boolean>;
     /**
-     * Used to dismiss the ```PSPDFKitView```.
+     * Used to dismiss the ```NutrientView```.
      * @method dismiss
-     * @memberof PSPDFKit
+     * @memberof Nutrient
      * @returns { Promise<boolean> } A promise returning ```true``` if the view was successfully dismissed, and ```false``` if not.
      * @example
-     * PSPDFKit.dismiss();
+     * Nutrient.dismiss();
      */
     dismiss: () => Promise<boolean>;
     /**
      * Used to set the current page of the document. Starts at 0.
      * @method setPageIndex
-     * @memberof PSPDFKit
+     * @memberof Nutrient
      * @param { number } pageIndex The page to transition to.
      * @param { boolean } animated ```true``` if the transition should be animated, and ```false``` otherwise.
      * @returns { Promise<boolean> } A promise returning ```true``` if the page was successfully set, and ```false``` if not.
      * @example
-     * PSPDFKit.setPageIndex(3, false);
+     * Nutrient.setPageIndex(3, false);
      */
     setPageIndex: (pageIndex: number, animated: boolean) => Promise<boolean>;
     /**
      * Used to create a new document with processed annotations, allowing a password to unlock the source document.
      * @method processAnnotations
-     * @memberof PSPDFKit
-     * @param { Annotation.Change } annotationChange Specifies how an annotation should be included in the resulting document. See {@link https://pspdfkit.com/api/react-native/Annotation.html#.Change} for supported options.
-     * @param { Array<Annotation.Type> } annotationTypes Specifies the annotation types that should be flattened. See {@link https://pspdfkit.com/api/react-native/Annotation.html#.Type} for supported types. Use ```Annotation.Type.ALL``` to include all annotation types.
+     * @memberof Nutrient
+     * @param { Annotation.Change } annotationChange Specifies how an annotation should be included in the resulting document. See {@link https://nutrient.io/api/react-native/Annotation.html#.Change} for supported options.
+     * @param { Array<Annotation.Type> } annotationTypes Specifies the annotation types that should be flattened. See {@link https://nutrient.io/api/react-native/Annotation.html#.Type} for supported types. Use ```Annotation.Type.ALL``` to include all annotation types.
      * @param { string } sourceDocumentPath The source document to use as input.
      * @param { string } processedDocumentPath The path where the output document should be written to.
      * @param { string | null } password The password to unlock the source document. Use ```null``` if not required.
      * @returns { Promise<boolean> } A promise returning ```true``` if the document annotations were successfully flattened, and ```false``` if not.
      * @example
-     * const result = await PSPDFKit.processAnnotations(
+     * const result = await Nutrient.processAnnotations(
      *                      'flatten',
      *                      'all',
      *                      sourceDocumentPath,
@@ -135,9 +135,9 @@ export class PSPDFKit {
     /**
      * Used to present an Instant PDF document for collaboration.
      * @method presentInstant
-     * @memberof PSPDFKit
+     * @memberof Nutrient
      * @param { InstantDocumentData } documentData The Instant document data received entirely from the web response.
-     * @param { PDFConfiguration } configuration Configuration object to customize the appearance and behavior of PSPDFKit. See {@link https://pspdfkit.com/api/react-native/PDFConfiguration.html} for available options. Also see {@link InstantConfiguration} for additional Instant configuration options.
+     * @param { PDFConfiguration } configuration Configuration object to customize the appearance and behavior of Nutrient. See {@link https://nutrient.io/api/react-native/PDFConfiguration.html} for available options. Also see {@link InstantConfiguration} for additional Instant configuration options.
      * @returns { Promise<boolean> } A promise returning ```true``` if the document was successfully presented, and ```false``` if not.
      * @see {@link https://github.com/PSPDFKit/react-native/blob/5b2716a3f3cd3732c0e5845cc39e28d19b618aa4/samples/Catalog/examples/InstantSynchronization.js#L85C7-L85C7} for an example implementation.
      * @example
@@ -154,20 +154,20 @@ export class PSPDFKit {
      *    syncAnnotations: PDFConfiguration.BooleanType.TRUE,
      * };
      *
-     * PSPDFKit.presentInstant(documentData, configuration);
+     * Nutrient.presentInstant(documentData, configuration);
      */
     presentInstant: (documentData: InstantDocumentData, configuration: PDFConfiguration) => Promise<boolean>;
     /**
-     * Delay in seconds before kicking off automatic sync after local changes are made to the ```editableDocument```’s annotations.
+     * Delay in seconds before kicking off automatic sync after local changes are made to the ```editableDocument```'s annotations.
      * @method setDelayForSyncingLocalChanges
-     * @memberof PSPDFKit
+     * @memberof Nutrient
      * @param { number } delay The delay in seconds.
      */
     setDelayForSyncingLocalChanges: (delay: number) => void;
     /**
      * Automatically listen for and sync changes from the server.
      * @method setListenToServerChanges
-     * @memberof PSPDFKit
+     * @memberof Nutrient
      * @param { boolean } listenToServerChanges ```true``` if server changes should be synced automatically, and false ```false``` otherwise.
      */
     setListenToServerChanges: (listenToServerChanges: boolean) => void;
@@ -181,6 +181,22 @@ export class PSPDFKit {
      * @ignore
      */
     removeListeners: () => void;
+    /**
+     * Method used by React Native Native Modules
+     * @ignore
+     * @param { string } event The event name.
+     * @param { number } componentId The component ID.
+     * @returns { Promise<void> }
+     */
+    handleListenerAdded: (event: string, componentId: number) => Promise<void>;
+    /**
+     * Method used by React Native Native Modules
+     * @ignore
+     * @param { string } event The event name.
+     * @param { number } componentId The component ID.
+     * @returns { Promise<void> }
+     */
+    handleListenerRemoved: (event: string, componentId: number) => Promise<void>;
 }
 /**
  * @typedef BlankPDFConfiguration
@@ -223,6 +239,7 @@ export class PSPDFKit {
  * @property { string } [position] The image position on the PDF page. Options are: ```top```, ```bottom```, ```left```, ```right```, ```center```.
  * @property { number } [rotation] The page rotation, in degrees.
  * @property { PDFTemplatePageMargins } [pageMargins] The page margins.
+ * @property { PDFTemplatePageSize } [pageSize] The size of the page.
  */
 /**
  * @typedef ImagePDFConfiguration
@@ -308,7 +325,7 @@ export class Processor {
      * const { tempDir } = await Processor.getTemporaryDirectory();
      * const documentPath = `${tempDir}/${fileName}`;
   
-     * const url = `https://www.pspdfkit.com`;
+     * const url = `https://www.nutrient.io`;
      * const configuration = {
      *    documentPath: documentPath,
      *    override: true,
@@ -424,7 +441,7 @@ export type Props = {
      */
     document: string;
     /**
-     * Configuration object to customize the appearance and behavior of PSPDFKit. See {@link https://pspdfkit.com/api/react-native/PDFConfiguration.html} for available options.
+     * Configuration object to customize the appearance and behavior of Nutrient. See {@link https://nutrient.io/api/react-native/PDFConfiguration.html} for available options.
      */
     configuration?: PDFConfiguration;
     /**
@@ -444,7 +461,7 @@ export type Props = {
      */
     hideNavigationBar?: boolean;
     /**
-     * Specifies whether the close button should be shown in the navigation bar. Disabled by default (```false```). Only applies when the ```PSPDFKitView``` is presented modally. Will call ```onCloseButtonPressed``` when tapped if a callback was provided. If ```onCloseButtonPressed``` wasn’t provided, ```PSPDFKitView``` will automatically be dismissed when modally presented.
+     * Specifies whether the close button should be shown in the navigation bar. Disabled by default (```false```). Only applies when the ```NutrientView``` is presented modally. Will call ```onCloseButtonPressed``` when tapped if a callback was provided. If ```onCloseButtonPressed``` wasn't provided, ```NutrientView``` will automatically be dismissed when modally presented.
      */
     showCloseButton?: boolean;
     /**
@@ -452,11 +469,11 @@ export type Props = {
      */
     disableDefaultActionForTappedAnnotations?: boolean;
     /**
-     * Controls whether or not the document will automatically be saved. Defaults to automatically saving (```false```).
+     * Controls whether or not the document will automatically be saved. Defaults to automatically saving (```false```). Deprecated since Nutrient React Native SDK 4.0. Use ```disableDocumentEditing``` on the ```PDFConfiguration``` object instead.
      */
     disableAutomaticSaving?: boolean;
     /**
-     * Controls the author name that’s set for new annotations. If not set and the user hasn’t specified it before, the user will be asked and the result will be saved. The value set here will be persisted and the user won’t be asked, even if this isn’t set the next time.
+     * Controls the author name that's set for new annotations. If not set and the user hasn't specified it before, the user will be asked and the result will be saved. The value set here will be persisted and the user won't be asked, even if this isn't set the next time.
      */
     annotationAuthorName?: string;
     /**
@@ -464,43 +481,47 @@ export type Props = {
      */
     imageSaveMode?: string;
     /**
-     * Callback that’s called when the user tapped the close button. If you provide this function, you need to handle dismissal yourself. If you don't provide this function, ```PSPDFKitView``` will be automatically dismissed. Only applies when the ```PSPDFKitView``` is presented modally.
+     * Callback that's called when the user tapped the close button. If you provide this function, you need to handle dismissal yourself. If you don't provide this function, ```NutrientView``` will be automatically dismissed. Only applies when the ```NutrientView``` is presented modally.
      */
     onCloseButtonPressed?: Function;
     /**
-     * Callback that’s called when the document is loaded in the ```PSPDFKitView```.
+     * Callback that's called when the document is loaded in the ```NutrientView```.
      */
     onDocumentLoaded?: Function;
     /**
-     * Callback that’s called when the document failed to load.
+     * Callback that's called when the ```NutrientView``` is ready. Use this callback start interacting with the ```PDFDocument``` object. Does not indicate a successful document load - use ```NotificationCenter.DocumentEvent.LOADED``` to monitor this.
+     */
+    onReady?: Function;
+    /**
+     * Callback that's called when the document failed to load.
      */
     onDocumentLoadFailed?: Function;
     /**
-     * Callback that’s called when the document is saved.
+     * Callback that's called when the document is saved.
      */
     onDocumentSaved?: Function;
     /**
-     * Callback that’s called when the document fails to save.
+     * Callback that's called when the document fails to save.
      */
     onDocumentSaveFailed?: Function;
     /**
-     * Callback that’s called when an annotation is tapped.
+     * Callback that's called when an annotation is tapped.
      */
     onAnnotationTapped?: Function;
     /**
-     * Callback that’s called when an annotation is added, changed, or removed.
+     * Callback that's called when an annotation is added, changed, or removed.
      */
     onAnnotationsChanged?: Function;
     /**
-     * Callback that’s called when the state of the ```PSPDFKitView``` changes.
+     * Callback that's called when the state of the ```NutrientView``` changes.
      */
     onStateChanged?: Function;
     /**
-     * Callback that’s called when a custom toolbar button is tapped.
+     * Callback that's called when a custom toolbar button is tapped.
      */
     onCustomToolbarButtonTapped?: Function;
     /**
-     * Callback that’s called when a custom annotation menu item is tapped.
+     * Callback that's called when a custom annotation menu item is tapped.
      */
     onCustomAnnotationContextualMenuItemTapped?: Function;
     /**
@@ -512,15 +533,15 @@ export type Props = {
      */
     menuItemGrouping?: any[];
     /**
-     * Sets the left bar button items. Note: The same button item cannot be added to both the left and right bar button items simultaneously. See {@link https://github.com/PSPDFKit/react-native/blob/master/ios/RCTPSPDFKit/Converters/RCTConvert+UIBarButtonItem.m} for supported button items.
+     * Sets the left bar button items. Note: The same button item cannot be added to both the left and right bar button items simultaneously. See {@link https://github.com/PSPDFKit/react-native/blob/master/ios/Converters/RCTConvert+UIBarButtonItem.m} for supported button items.
      */
     leftBarButtonItems?: Array<string>;
     /**
-     * Sets the right bar button items. Note: The same button item cannot be added to both the left and right bar button items simultaneously. See {@link https://github.com/PSPDFKit/react-native/blob/master/ios/RCTPSPDFKit/Converters/RCTConvert+UIBarButtonItem.m} for supported button items.
+     * Sets the right bar button items. Note: The same button item cannot be added to both the left and right bar button items simultaneously. See {@link https://github.com/PSPDFKit/react-native/blob/master/ios/Converters/RCTConvert+UIBarButtonItem.m} for supported button items.
      */
     rightBarButtonItems?: Array<string>;
     /**
-     * Used to specify a custom toolbar title on iOS by setting the ```title``` property of the ```PSPDFViewController```. Note: You need to set ```documentLabelEnabled```, ```useParentNavigationBar```, and ```allowToolbarTitleChange``` to ```false``` in your configuration before setting the custom title.
+     * Used to specify a custom toolbar title on iOS by setting the ```title``` property of the ```PSPDFViewController```. Note: You need to set ```documentLabelEnabled```, ```useParentNavigationBar```, and ```allowToolbarTitleChange``` to ```false``` in your configuration before setting the custom title. Deprecated since Nutrient React Native SDK 4.0. Use ```toolbarTitle``` on the ```PDFConfiguration``` object instead.
      */
     toolbarTitle?: string;
     /**
@@ -528,7 +549,7 @@ export type Props = {
      */
     toolbarMenuItems?: Array<string>;
     /**
-     * When set to ```true```, the toolbar integrated into the ```PSPDFKitView``` will display a back button in the top-left corner.
+     * When set to ```true```, the toolbar integrated into the ```NutrientView``` will display a back button in the top-left corner. Android only.
      */
     showNavigationButtonInToolbar?: boolean;
     /**
@@ -548,7 +569,7 @@ export type Props = {
      */
     showDownloadableFonts?: boolean;
     /**
-     * The annotation preset configuration. See {@link https://pspdfkit.com/api/react-native/Annotation.html#.AnnotationPresetConfiguration} for available options.
+     * The annotation preset configuration. See {@link https://nutrient.io/api/react-native/Annotation.html#.AnnotationPresetConfiguration} for available options.
      */
     annotationPresets?: AnnotationPresetConfiguration;
     /**
@@ -580,7 +601,7 @@ export type InstantConfiguration = {
      */
     listenToServerChanges: boolean;
     /**
-     * Delay in seconds before kicking off automatic sync after local changes are made to the ```editableDocument```’s annotations.
+     * Delay in seconds before kicking off automatic sync after local changes are made to the ```editableDocument```'s annotations.
      */
     delay: number;
     /**
@@ -709,6 +730,10 @@ export type PDFImage = {
      * The page margins.
      */
     pageMargins?: PDFTemplatePageMargins;
+    /**
+     * The size of the page.
+     */
+    pageSize?: PDFTemplatePageSize;
 };
 export type ImagePDFConfiguration = {
     /**
@@ -777,11 +802,11 @@ export type GeneratePDFResult = {
     fileURL: string;
 };
 /**
- * PSPDFKitView is a React Native component used to view PDF documents on iOS and Android.
+ * NutrientView is a React Native component used to view PDF documents on iOS and Android.
  * @augments {React.Component<Props, *>}
  * @hideconstructor
  * @example
- * <PSPDFKitView
+ * <NutrientView
  *      document={DOCUMENT_PATH}
  *      configuration={{
  *        showThumbnailBar: PDFConfiguration.ShowThumbnailBar.SCROLLABLE,
@@ -793,8 +818,15 @@ export type GeneratePDFResult = {
  *      style={{ flex: 1 }}
  *    />
  */
-declare class PSPDFKitView extends React.Component<Props, any, any> {
+declare class NutrientView extends React.Component<Props, any, any> {
+    static _isNewArchitecture: any;
+    static _FabricComponent: any;
+    static _getArchitectureInfo(): {
+        isNewArchitecture: any;
+        FabricComponent: any;
+    };
     constructor(props: Props);
+    constructor(props: Props, context: any);
     /**
      * @ignore
      */
@@ -819,6 +851,7 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * @ignore
      */
     _componentRef: React.RefObject<any>;
+    _fabricRef: React.RefObject<any>;
     render(): React.JSX.Element;
     /**
      * @ignore
@@ -865,12 +898,16 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      */
     _onCustomAnnotationContextualMenuItemTapped: (event: any) => void;
     /**
+     * @ignore
+     */
+    _onReady: (event: any) => void;
+    /**
      * Enters annotation creation mode, showing the annotation creation toolbar.
      * @method enterAnnotationCreationMode
      * @param { Annotation.Type } [annotationType] The annotation type that should be pre-selected when entering annotation creation mode.
      * @example
      * this.pdfRef.current.enterAnnotationCreationMode();
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      */
     enterAnnotationCreationMode: (annotationType?: Annotation.Type) => any;
     /**
@@ -878,15 +915,15 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * @method exitCurrentlyActiveMode
      * @example
      * this.pdfRef.current.exitCurrentlyActiveMode();
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      */
     exitCurrentlyActiveMode: () => any;
     /**
-     * Saves the document that’s currently open.
+     * Saves the document that's currently open.
      * @deprecated Since Nutrient React Native SDK 2.12. Use ```this.pdfRef.current?.getDocument().save()``` instead.
-     * See {@link https://pspdfkit.com/api/react-native/PDFDocument.html#.save|save()}.
+     * See {@link https://nutrient.io/api/react-native/PDFDocument.html#.save|save()}.
      * @method saveCurrentDocument
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      * @example
      * const result = await this.pdfRef.current.saveCurrentDocument();
      *
@@ -898,9 +935,9 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * @method getDocument
      * @example
      * const document = this.pdfRef.current?.getDocument();
-     * @see {@link https://pspdfkit.com/api/react-native/PDFDocument.html} for available methods.
-     * @memberof PSPDFKitView
-     * @returns { PDFDocument } A reference to the document that is currently loaded in the PSPDFKitView component.
+     * @see {@link https://nutrient.io/api/react-native/PDFDocument.html} for available methods.
+     * @memberof NutrientView
+     * @returns { PDFDocument } A reference to the document that is currently loaded in the NutrientView component.
      */
     getDocument(): PDFDocument;
     /**
@@ -908,14 +945,14 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * @method getNotificationCenter
      * @example
      * const document = this.pdfRef.current?.getNotificationCenter();
-     * @see {@link https://pspdfkit.com/api/react-native/NotificationCenter.html} for available methods.
-     * @memberof PSPDFKitView
+     * @see {@link https://nutrient.io/api/react-native/NotificationCenter.html} for available methods.
+     * @memberof NutrientView
      * @returns { NotificationCenter } A reference to the Notification Center that can be used to subscribe and unsubscribe from events.
      */
     getNotificationCenter(): NotificationCenter;
     /**
      * @method clearSelectedAnnotations
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      * @description Clears all currently selected Annotations.
      * @example
      * const result = await this.pdfRef.current?.clearSelectedAnnotations();
@@ -924,27 +961,27 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
     clearSelectedAnnotations: () => Promise<any>;
     /**
      * @method selectAnnotations
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      * @param { object } annotations An array of the annotations to select in Instant JSON format.
      * @param { boolean } [showContextualMenu] Whether the annotation contextual menu should be shown after selection.
      * @description Select one or more annotations.
      * @example
      * const result = await this.pdfRef.current?.selectAnnotations(annotations);
-     * @returns { Promise<any> } A promise containing the result of the operation. ```true``` if the annotations were selected, ```false``` otherwise.
+     * @returns { Promise<boolean> } A promise containing the result of the operation. ```true``` if the annotations were selected, ```false``` otherwise.
      */
-    selectAnnotations: (annotations: object, showContextualMenu?: boolean) => Promise<any>;
+    selectAnnotations: (annotations: object, showContextualMenu?: boolean) => Promise<boolean>;
     /**
      * Gets all annotations of the given type from the specified page.
      *
      * @method getAnnotations
      * @deprecated Since Nutrient React Native SDK 2.12. Use ```this.pdfRef.current?.getDocument().getAnnotations()``` or ```getAnnotationsForPage()``` instead.
-     * See {@link https://pspdfkit.com/api/react-native/PDFDocument.html#.getAnnotations|getAnnotations()} and {@link https://pspdfkit.com/api/react-native/PDFDocument.html#.getAnnotationsForPage|getAnnotationsForPage()}.
-     * @memberof PSPDFKitView
+     * See {@link https://nutrient.io/api/react-native/PDFDocument.html#.getAnnotations|getAnnotations()} and {@link https://nutrient.io/api/react-native/PDFDocument.html#.getAnnotationsForPage|getAnnotationsForPage()}.
+     * @memberof NutrientView
      * @param { number } pageIndex The page index to get the annotations for, starting at 0.
      * @param { string } [type] The type of annotations to get. If not specified or ```null```, all annotation types will be returned.
      * @example
      * const result = await this.pdfRef.current.getAnnotations(3, 'pspdfkit/ink');
-     * @see {@link https://pspdfkit.com/guides/web/json/schema/annotations/} for supported types.
+     * @see {@link https://nutrient.io/guides/web/json/schema/annotations/} for supported types.
      *
      * @returns { Promise } A promise containing an object with an array of InstantJSON objects.
      */
@@ -954,11 +991,11 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      *
      * @method addAnnotation
      * @deprecated Since Nutrient React Native SDK 2.12. Use ```this.pdfRef.current?.getDocument().addAnnotations()``` instead.
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      * @param { object } annotation The InstantJSON of the annotation to add.
      * @example
      * const result = await this.pdfRef.current.addAnnotation(annotationJSON);
-     * @see {@link https://pspdfkit.com/guides/web/json/schema/annotations/} for document JSON structure.
+     * @see {@link https://nutrient.io/guides/web/json/schema/annotations/} for document JSON structure.
      *
      * @returns { Promise<boolean> } A promise resolving to ```true``` if the annotation was added successfully, and ```false``` if an error occurred.
      */
@@ -968,13 +1005,13 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      *
      * @method removeAnnotation
      * @deprecated Since Nutrient React Native SDK 2.12. Use ```this.pdfRef.current?.getDocument().removeAnnotations()``` instead.
-     * See {@link https://pspdfkit.com/api/react-native/PDFDocument.html#.removeAnnotations|removeAnnotations()}.
-     * @memberof PSPDFKitView
+     * See {@link https://nutrient.io/api/react-native/PDFDocument.html#.removeAnnotations|removeAnnotations()}.
+     * @memberof NutrientView
      * @param { object } annotation The InstantJSON of the annotation to remove.
      * @example
      * const result = await this.pdfRef.current.removeAnnotation(instantJSON);
      *
-     * @returns { Promise } A promise resolving to ```true``` if the annotation was removed successfully, and ```false``` if the annotation couldn’t be found or an error occurred.
+     * @returns { Promise } A promise resolving to ```true``` if the annotation was removed successfully, and ```false``` if the annotation couldn't be found or an error occurred.
      */
     removeAnnotation: (annotation: object) => Promise<any>;
     /**
@@ -982,13 +1019,13 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      *
      * @method removeAnnotations
      * @deprecated Since Nutrient React Native SDK 2.12. Use ```this.pdfRef.current?.getDocument().removeAnnotations()``` instead.
-     * See {@link https://pspdfkit.com/api/react-native/PDFDocument.html#.removeAnnotations|removeAnnotations()}.
-     * @memberof PSPDFKitView
+     * See {@link https://nutrient.io/api/react-native/PDFDocument.html#.removeAnnotations|removeAnnotations()}.
+     * @memberof NutrientView
      * @param { object } annotation The InstantJSON of the annotations to remove.
      * @example
      * const result = await this.pdfRef.current.removeAnnotations(instantJSON);
      *
-     * @returns { Promise } A promise resolving to ```true``` if the annotations were removed successfully, and ```false``` if the annotations couldn’t be found or an error occurred.
+     * @returns { Promise } A promise resolving to ```true``` if the annotations were removed successfully, and ```false``` if the annotations couldn't be found or an error occurred.
      */
     removeAnnotations: (annotations: any) => Promise<any>;
     /**
@@ -996,10 +1033,10 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      *
      * @method getAllUnsavedAnnotations
      * @deprecated Since Nutrient React Native SDK 2.12. Use ```this.pdfRef.current?.getDocument().getAllUnsavedAnnotations()``` instead.
-     * See {@link https://pspdfkit.com/api/react-native/PDFDocument.html#.getAllUnsavedAnnotations|getAllUnsavedAnnotations()}.
-     * @memberof PSPDFKitView
+     * See {@link https://nutrient.io/api/react-native/PDFDocument.html#.getAllUnsavedAnnotations|getAllUnsavedAnnotations()}.
+     * @memberof NutrientView
      * @returns { Promise } A promise containing document InstantJSON.
-     * @see {@link https://pspdfkit.com/guides/android/current/importing-exporting/instant-json/#instant-document-json-api-a56628} for more information.
+     * @see {@link https://nutrient.io/guides/android/current/importing-exporting/instant-json/#instant-document-json-api-a56628} for more information.
      */
     getAllUnsavedAnnotations: () => Promise<any>;
     /**
@@ -1007,10 +1044,10 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      *
      * @method getAllAnnotations
      * @deprecated Since Nutrient React Native SDK 2.12. Use ```this.pdfRef.current?.getDocument().getAnnotations()``` instead.
-     * See {@link https://pspdfkit.com/api/react-native/PDFDocument.html#.getAnnotations|getAnnotations()}.
-     * @memberof PSPDFKitView
+     * See {@link https://nutrient.io/api/react-native/PDFDocument.html#.getAnnotations|getAnnotations()}.
+     * @memberof NutrientView
      * @param { string } [type] The type of annotations to get. If not specified or ```null```, all annotation types will be returned.
-     * @see {@link https://pspdfkit.com/guides/web/json/schema/annotations/} for supported types.
+     * @see {@link https://nutrient.io/guides/web/json/schema/annotations/} for supported types.
      * @example
      * const result = await this.pdfRef.current.getAllAnnotations('all');
      * // result: {'annotations' : [instantJson]}
@@ -1023,12 +1060,12 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      *
      * @method addAnnotations
      * @deprecated Since Nutrient React Native SDK 2.12. Use ```this.pdfRef.current?.getDocument().addAnnotations()``` instead.
-     * See {@link https://pspdfkit.com/api/react-native/PDFDocument.html#.addAnnotations|addAnnotations()}.
-     * @memberof PSPDFKitView
+     * See {@link https://nutrient.io/api/react-native/PDFDocument.html#.addAnnotations|addAnnotations()}.
+     * @memberof NutrientView
      * @param { object } annotations The document InstantJSON to apply to the current document.
      * @example
      * const result = await this.pdfRef.current.addAnnotations(annotationsJSON);
-     * @see {@link https://pspdfkit.com/guides/web/json/schema/annotations/} for document JSON structure.
+     * @see {@link https://nutrient.io/guides/web/json/schema/annotations/} for document JSON structure.
      *
      * @returns { Promise<boolean> } A promise resolving to ```true``` if the annotations were added successfully, and ```false``` if an error occurred.
      */
@@ -1037,9 +1074,10 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * Sets the flags of the specified annotation.
      *
      * @method setAnnotationFlags
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      * @param { string } uuid The UUID of the annotation to update.
      * @param { Annotation.Flags[] } flags The flags to apply to the annotation.
+     * @deprecated Since Nutrient React Native SDK 4.0. Use ```this.pdfRef.current?.getDocument().setAnnotationFlags()``` instead.
      * @example
      * const result = await this.pdfRef.current.setAnnotationFlags('bb61b1bf-eacd-4227-a5bf-db205e591f5a', ['locked', 'hidden']);
      *
@@ -1050,8 +1088,9 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * Gets the flags for the specified annotation.
      *
      * @method getAnnotationFlags
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      * @param { string } uuid The UUID of the annotation to query.
+     * @deprecated Since Nutrient React Native SDK 4.0. Use ```this.pdfRef.current?.getDocument().getAnnotationFlags()``` instead.
      * @example
      * const flags = await this.pdfRef.current.getAnnotationFlags('bb61b1bf-eacd-4227-a5bf-db205e591f5a');
      *
@@ -1063,8 +1102,8 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      *
      * @method importXFDF
      * @deprecated Since Nutrient React Native SDK 2.12. Use ```this.pdfRef.current?.getDocument().importXFDF()``` instead.
-     * See {@link https://pspdfkit.com/api/react-native/PDFDocument.html#.importXFDF|importXFDF()}.
-     * @memberof PSPDFKitView
+     * See {@link https://nutrient.io/api/react-native/PDFDocument.html#.importXFDF|importXFDF()}.
+     * @memberof NutrientView
      * @param { string } filePath The path to the XFDF file to import.
      * @example
      * const result = await this.pdfRef.current.importXFDF('path/to/XFDF.xfdf');
@@ -1077,8 +1116,8 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      *
      * @method exportXFDF
      * @deprecated Since Nutrient React Native SDK 2.12. Use ```this.pdfRef.current?.getDocument().exportXFDF()``` instead.
-     * See {@link https://pspdfkit.com/api/react-native/PDFDocument.html#.exportXFDF|exportXFDF()}.
-     * @memberof PSPDFKitView
+     * See {@link https://nutrient.io/api/react-native/PDFDocument.html#.exportXFDF|exportXFDF()}.
+     * @memberof NutrientView
      * @param { string } filePath The path where the XFDF file should be exported to.
      * @example
      * const result = await this.pdfRef.current.exportXFDF('path/to/XFDF.xfdf');
@@ -1095,7 +1134,7 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * Gets the form field value of the supplied form field name.
      *
      * @method getFormFieldValue
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      * @param { string } fullyQualifiedName The fully qualified name of the form element.
      * @deprecated Since Nutrient React Native SDK 2.17. Use the ```getFormElements``` API on the ```PDFDocument.forms``` object instead, and filter by ```fullyQualifiedFieldName```.
      * @example
@@ -1120,7 +1159,7 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * Sets the form field value of the supplied form field name.
      *
      * @method setFormFieldValue
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      * @param { string } fullyQualifiedName The fully qualified name of the form element. When using form elements such as radio buttons, the individual elements can be accessed by appending the index to the fully qualified name, for example ```choiceElement.0``` and ```choiceElement.1```.
      * @param { string } value The new string value of the form element. For button form elements, pass ```selected``` or ```deselected```. For choice form elements, pass the index of the choice to select, for example ```1```.
      * @deprecated Since Nutrient React Native SDK 2.17. Use one of the ```update``` APIs on the ```PDFDocument.forms``` object instead.
@@ -1135,9 +1174,10 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * Note: The same button item cannot be added to both the left and right bar button items simultaneously.
      *
      * @method setLeftBarButtonItems
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      * @param { Array<string> } items The list of bar button items.
-     * @see {@link https://github.com/PSPDFKit/react-native/blob/master/ios/RCTPSPDFKit/Converters/RCTConvert+UIBarButtonItem.m} for supported button items.
+     * @deprecated Since Nutrient React Native SDK 4.0. Use ```this.pdfRef.current?.setToolbar()``` instead.
+     * @see {@link https://github.com/PSPDFKit/react-native/blob/master/ios/Converters/RCTConvert+UIBarButtonItem.m} for supported button items.
      * @param { string } [viewMode] The view mode for which the bar buttons should be set. Options are: ```document```, ```thumbnails```, ```documentEditor```, or ```null```. If ```null``` is passed, the bar button items for all the view modes are set.
      * @param { boolean } [animated] Specifies whether changing the bar buttons should be animated.
      * @example
@@ -1152,10 +1192,10 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * Gets the left bar button items for the specified view mode.
      *
      * @method getLeftBarButtonItemsForViewMode
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      * @param { string } [viewMode] The view mode to query. Options are: ```document```, ```thumbnails```, ```documentEditor```, or ```null```. If ```null``` is passed, the bar button items for the current view mode are returned.
-     *
-     * @returns { Promise<Array<string>> } A promise containing an array of bar button items, or an error if the items couldn’t be retrieved.
+     * @deprecated Since Nutrient React Native SDK 4.0. Use ```this.pdfRef.current?.getToolbar()``` instead.
+     * @returns { Promise<Array<string>> } A promise containing an array of bar button items, or an error if the items couldn't be retrieved.
      * @example
      * const leftBarButtonItems = await this.pdfRef.current.getLeftBarButtonItemsForViewMode('document');
      * // leftBarButtonItems: ['outlineButtonItem', 'searchButtonItem']
@@ -1169,9 +1209,10 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * Note: The same button item cannot be added to both the left and right bar button items simultaneously.
      *
      * @method setRightBarButtonItems
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      * @param { Array<string> } items The list of bar button items.
-     * @see {@link https://github.com/PSPDFKit/react-native/blob/master/ios/RCTPSPDFKit/Converters/RCTConvert+UIBarButtonItem.m} for supported button items.
+     * @deprecated Since Nutrient React Native SDK 4.0. Use ```this.pdfRef.current?.setToolbar()``` instead.
+     * @see {@link https://github.com/PSPDFKit/react-native/blob/master/ios/Converters/RCTConvert+UIBarButtonItem.m} for supported button items.
      * @param { string } [viewMode] The view mode for which the bar buttons should be set. Options are: ```document```, ```thumbnails```, ```documentEditor```, or ```null```. If ```null``` is passed, the bar button items for all the view modes are set.
      * @param { boolean } [animated] Specifies whether changing the bar buttons should be animated.
      * @example
@@ -1186,10 +1227,10 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * Gets the right bar button items for the specified view mode.
      *
      * @method getRightBarButtonItemsForViewMode
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      * @param { string } [viewMode] The view mode to query. Options are: ```document```, ```thumbnails```, ```documentEditor```, or ```null```. If ```null``` is passed, the bar button items for the current view mode are returned.
-     *
-     * @returns { Promise<Array<string>> } A promise containing an array of bar button items, or an error if the items couldn’t be retrieved.
+     * @deprecated Since Nutrient React Native SDK 4.0. Use ```this.pdfRef.current?.getToolbar()``` instead.
+     * @returns { Promise<Array<string>> } A promise containing an array of bar button items, or an error if the items couldn't be retrieved.
      * @example
      * const rightBarButtonItems = await this.pdfRef.current.getRightBarButtonItemsForViewMode('document');
      * // rightBarButtonItems: ['outlineButtonItem', 'searchButtonItem']
@@ -1202,7 +1243,7 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * Sets the Toolbar object to customize the toolbar appearance and behaviour.
      *
      * @method setToolbar
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      * @param { Toolbar } toolbar The toolbar object.
      * @example
      * const toolbar = {
@@ -1220,26 +1261,27 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      *	this.pdfRef.current.setToolbar(toolbar);
      *
      */
-    setToolbar: (toolbar: Toolbar) => void;
+    setToolbar: (toolbar: Toolbar) => any;
     /**
      * Gets the toolbar for the specified view mode.
      *
      * @method getToolbar
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      * @param { string } [viewMode] The view mode to query. Options are: ```document```, ```thumbnails```, ```documentEditor```, or ```null```. If ```null``` is passed, the toolbar buttons for the current view mode are returned.
      *
-     * @returns { Promise<Array<string>> } A promise containing the toolbar object, or an error if it couldn’t be retrieved.
+     * @returns { Promise<Array<string>> } A promise containing the toolbar object, or an error if it couldn't be retrieved.
      * @example
      * const toolbar = await this.pdfRef.current.getToolbar('document');
      *
      */
     getToolbar: (viewMode?: string) => Promise<Array<string>>;
     /**
-     * Sets the measurement value configurations for the ```PSPDFKitView```.
+     * Sets the measurement value configurations for the ```NutrientView```.
      *
      * @method setMeasurementValueConfigurations
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      * @param { MeasurementValueConfiguration[] } configurations The array of ```MeasurementValueConfiguration``` objects that should be applied to the document.
+     * @returns { Promise<boolean> } A promise containing the result of the operation.
      * @example
      * const scale: MeasurementScale = {
      *    unitFrom: Measurements.ScaleUnitFrom.INCH,
@@ -1257,12 +1299,12 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      *  const configs = [measurementValueConfig];
      *  await this.pdfRef.current?.setMeasurementValueConfigurations(configs);
      */
-    setMeasurementValueConfigurations: (configurations: MeasurementValueConfiguration[]) => Promise<any>;
+    setMeasurementValueConfigurations: (configurations: MeasurementValueConfiguration[]) => Promise<boolean>;
     /**
-     * Gets the current PSPDFKitView MeasurementValueConfigurations.
+     * Gets the current NutrientView MeasurementValueConfigurations.
      *
      * @method getMeasurementValueConfigurations
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      *
      * @returns { Promise<MeasurementValueConfiguration[]> } A promise containing an array of ```MeasurementValueConfiguration``` objects.
      * @example
@@ -1273,19 +1315,20 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * Customizes the visible toolbar menu items for Android.
      *
      * @method setToolbarMenuItems
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      * @param { Array<string> } toolbarMenuItems The list of bar button items.
-     * @see {@link https://pspdfkit.com/guides/react-native/user-interface/toolbars/main-toolbar/} for supported button items.
+     * @deprecated Since Nutrient React Native SDK 4.0. Use ```this.pdfRef.current?.setToolbar()``` instead.
+     * @see {@link https://nutrient.io/guides/react-native/user-interface/toolbars/main-toolbar/} for supported button items.
      * @example
      * const result = await this.pdfRef.current.setToolbarMenuItems(['searchButtonItem', 'readerViewButtonItem']);
      *
      */
     setToolbarMenuItems: (toolbarMenuItems: Array<string>) => void;
     /**
-     * Gets the current PSPDFKitView configuration.
+     * Gets the current NutrientView configuration.
      *
      * @method getConfiguration
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      *
      * @returns { Promise<PDFConfiguration> } A promise containing a ```PDFConfiguration``` object with the document configuration.
      * @example
@@ -1296,7 +1339,7 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * Prevents the specified annotations from being interacted with.
      *
      * @method setExcludedAnnotations
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      * @param {string[]} annotations The list of annotation UUIDs to exclude from annotation interaction.
      * @example
      * const result = await this.pdfRef.current?.setExcludedAnnotations(['A1FD2345-1234-1234-1234-123456789012']);
@@ -1310,13 +1353,13 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * function will prevent the crash by removing the fragment from the ```PdfView``` before the navigation takes place.
      *
      * @method destroyView
-     * @memberof PSPDFKitView
+     * @memberof NutrientView
      *
      */
-    destroyView: () => void;
+    destroyView: () => any;
     _getViewManagerConfig: (viewManagerName: any) => any;
 }
-declare namespace PSPDFKitView {
+declare namespace NutrientView {
     namespace propTypes {
         let document: string;
         let configuration: PDFConfiguration;
@@ -1331,6 +1374,7 @@ declare namespace PSPDFKitView {
         let imageSaveMode: string;
         let onCloseButtonPressed: Function;
         let onDocumentLoaded: Function;
+        let onReady: Function;
         let onDocumentLoadFailed: Function;
         let onDocumentSaved: Function;
         let onDocumentSaveFailed: Function;
@@ -1364,7 +1408,7 @@ declare module 'react-native' {
       //@ts-ignore
       RNProcessor: Processor;
       //@ts-ignore
-      PSPDFKit: PSPDFKit;
+      Nutrient: Nutrient;
    }
 }
 //@ts-ignore

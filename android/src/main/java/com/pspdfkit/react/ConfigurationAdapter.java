@@ -96,6 +96,7 @@ public class ConfigurationAdapter {
     private static final String SHOW_SETTINGS_MENU = "showSettingsMenu";
     private static final String SHOW_DEFAULT_TOOLBAR = "showDefaultToolbar";
     private static final String SHOW_ACTION_BUTTONS = "showActionButtons";
+    private static final String ENABLE_STYLUS_ON_DETECTION = "enableStylusOnDetection";
 
     // Thumbnail Options
     private static final String SHOW_THUMBNAIL_BAR = "showThumbnailBar";
@@ -164,6 +165,7 @@ public class ConfigurationAdapter {
         boolean hasConfiguration = iterator.hasNextKey();
         this.configuration = new PdfActivityConfiguration.Builder(context);
         this.configuration.contentEditingEnabled(false);
+        this.configuration.immersiveModeEnabled(false);
         if (hasConfiguration) {
             String key;
 
@@ -335,6 +337,10 @@ public class ConfigurationAdapter {
             if (key != null) {
                 configureShowActionButtons(configuration.getBoolean(key));
             }
+            key = getKeyOrNull(configuration, ENABLE_STYLUS_ON_DETECTION);
+            if (key != null) {
+                configureEnableStylusOnDetection(configuration.getBoolean(key));
+            }
         }
     }
 
@@ -497,7 +503,7 @@ public class ConfigurationAdapter {
     }
 
     private void configureImmersiveMode(final boolean immersiveMode) {
-        configuration.useImmersiveMode(immersiveMode);
+        configuration.immersiveModeEnabled(immersiveMode);
     }
 
     private void configureShowThumbnailBar(@Nullable final String showThumbnailBar) {
@@ -672,6 +678,10 @@ public class ConfigurationAdapter {
 
     private void configureShowActionButtons(final boolean showActionButtons) {
         configuration.navigationButtonsEnabled(showActionButtons);
+    }
+
+    private void configureEnableStylusOnDetection(final boolean enableStylus) {
+        configuration.stylusOnDetectionEnabled(enableStylus);
     }
 
     public PdfActivityConfiguration build() {

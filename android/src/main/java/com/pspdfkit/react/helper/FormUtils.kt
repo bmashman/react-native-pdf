@@ -1,5 +1,7 @@
 package com.pspdfkit.react.helper
 
+import com.pspdfkit.LicenseFeature
+import com.pspdfkit.PSPDFKit
 import com.pspdfkit.forms.ButtonFormElement
 import com.pspdfkit.forms.FormField
 import com.pspdfkit.forms.FormType
@@ -45,7 +47,6 @@ object FormUtils {
             FormType.SIGNATURE -> "signature"
             FormType.TEXT -> "text"
             FormType.UNDEFINED -> "unknown"
-            else -> "unknown"
         }
     }
 
@@ -60,31 +61,42 @@ object FormUtils {
 
         when (formElement) {
             is EditableButtonFormElement -> {
-                elementJSON["type"] = "button"
+                elementJSON["formTypeName"] = "button"
                 elementJSON["selected"] = formElement.isSelected
             }
             is ButtonFormElement -> {
-                elementJSON["type"] = "button"
+                elementJSON["formTypeName"] = "button"
             }
             is ChoiceFormElement -> {
-                elementJSON["type"] = "choice"
+                elementJSON["formTypeName"] = "choice"
+                formElement.options.let { options ->
+                    elementJSON["options"] = options.map { option ->
+                        mapOf(
+                            "value" to option.value,
+                            "label" to option.label
+                        )
+                    }
+                }
                 elementJSON["selectedIndices"] = formElement.selectedIndexes
                 if (formElement is ComboBoxFormElement && formElement.isCustomTextSet) {
                     elementJSON["value"] = formElement.customText ?: ""
                 }
             }
             is SignatureFormElement -> {
-                elementJSON["type"] = "signature"
-                elementJSON["signatureInfo"] = mapOf(
-                    "name" to (formElement.signatureInfo.name ?: ""),
-                    "date" to (formElement.signatureInfo.creationDate?.toString() ?: ""),
-                    "reason" to (formElement.signatureInfo.reason ?: ""),
-                    "location" to (formElement.signatureInfo.location ?: "")
-                )
+                elementJSON["formTypeName"] = "signature"
+                // Only include signatureInfo if customer has the ES license
+                if (PSPDFKit.getLicenseFeatures().contains(LicenseFeature.ELECTRONIC_SIGNATURES)) {
+                    elementJSON["signatureInfo"] = mapOf(
+                        "name" to (formElement.signatureInfo.name ?: ""),
+                        "date" to (formElement.signatureInfo.creationDate?.toString() ?: ""),
+                        "reason" to (formElement.signatureInfo.reason ?: ""),
+                        "location" to (formElement.signatureInfo.location ?: "")
+                    )
+                }
                 elementJSON["isSigned"] = formElement.isSigned
             }
             is TextFormElement -> {
-                elementJSON["type"] = "textField"
+                elementJSON["formTypeName"] = "textField"
                 elementJSON["value"] = formElement.text ?: ""
                 elementJSON["isPassword"] = formElement.isPassword
                 elementJSON["fontSize"] = formElement.annotation.fontSize
@@ -97,10 +109,7 @@ object FormUtils {
         // Convert any null values to empty strings
         val sanitizedJSON = HashMap<String, Any>()
         for ((key, value) in elementJSON) {
-            sanitizedJSON[key] = when (value) {
-                null -> ""
-                else -> value
-            }
+            sanitizedJSON[key] = value ?: ""
         }
 
         return sanitizedJSON

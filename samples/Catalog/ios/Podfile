@@ -5,6 +5,7 @@ require Pod::Executable.execute_command("node", ["-p", "require.resolve('react-n
 
 platform :ios, "16.0"
 prepare_react_native_project!
+ENV["RCT_NEW_ARCH_ENABLED"] = "1"
 
 linkage = ENV.fetch("USE_FRAMEWORKS", nil)
 unless linkage.nil?
@@ -27,8 +28,8 @@ target "Catalog" do
     app_path: "#{Pod::Config.instance.installation_root}/.."
   )
 
-  # PSPDFKit iOS SDK version specified by PSPDFKit React Native Plugin. Do not remove this line.
-  # Instant iOS SDK version specified by PSPDFKit React Native Plugin. Do not remove this line.
+  # PSPDFKit iOS SDK version specified by Nutrient React Native Plugin. Do not remove this line.
+  # Instant iOS SDK version specified by Nutrient React Native Plugin. Do not remove this line.
 
   target "CatalogTests" do
     inherit! :complete

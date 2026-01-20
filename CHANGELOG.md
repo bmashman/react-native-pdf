@@ -1,16 +1,73 @@
-## 2.19.0 - 01 Jul 2025
+## 4.0.1 — 28 Nov 2025
+
+- Fixes an issue where the `setLicenseKeys` API could throw an error on iOS. (J#HYB-916)
+
+## 4.0.0 — 20 Nov 2025
+
+- Adds support for React Native’s new architecture. (J#HYB-847)
+- Updates the `onDocumentLoadFailed` and `DocumentEvent.LOAD_FAILED` events to include a reason code and message. (J#HYB-903)
+
+## 3.2.0 — 20 Oct 2025
+
+- Adds the page size to the existing `getPageInfo` API call. (J#HYB-888)
+- Adds the `androidEnableStylusOnDetection` option to the `PDFConfiguration` object to control stylus detection on Android. (J#HYB-893)
+- Updates for Nutrient Android SDK 10.7.0.
+- Updates for Nutrient iOS SDK 26.1.0.
+- Fixes image annotations being incorrectly placed when added on pages with a rotation or crop box. (J#IOS-767)
+- Fixes an issue where the `presentInstant` API call would never resolve its promise on iOS. (J#HYB-894)
+- Fixes an issue where the `onDocumentLoadFailed` callback wasn’t triggered for invalid documents on iOS. (J#HYB-885)
+
+## 3.1.1 - 19 Sep 2025
+
+- Fixes an issue where the `setLicenseKey` API didn’t run synchronously on Android. (J#HYB-881)
+- Fixes an issue where the `FormFieldEvent.VALUES_UPDATED` event returned incomplete objects. (J#HYB-884)
+
+## 3.1.0 - 10 Sep 2025
+
+- Adds the `getOverlappingSignature` API to `SignatureFormElement` objects to retrieve overlapping signature annotations. (J#HYB-867)
+- Updates `BookmarksEvent.CHANGED` to include entire `Bookmark` objects. (J#HYB-832)
+- Updates the `SignatureFormElement` object to only include `SignatureInfo` when the Electronic Signatures license feature is present. (J#HYB-862)
+- Updates to Nutrient iOS SDK 14.12.0.
+- Fixes inconsistent behavior between iOS and Android for the `updateChoiceFormFieldValue` API. (J#HYB-873)
+- Fixes an issue where the `updateFormField` APIs on Android used the `fieldName` rather than `fullyQualifiedName` as a reference. (J#HYB-869)
+- Fixes an issue where certain `FormElement` properties were parsed incorrectly during the `getFormElements` API call. (J#HYB-858)
+- Fixes an issue where calling `unsubscribeAllEvents` would result in all `NotificationCenter` listeners being removed on all active `NutrientView` instances. (J#HYB-866)
+- Fixes an issue where `NotificationCenter` would deliver duplicate events if multiple `NutrientView` instances are active. (J#HYB-866)
+- Fixes an issue where the `readerViewButtonItem` wasn’t being applied correctly on Android. (J#HYB-878)
+
+## 3.0.1 - 01 Aug 2025
+
+- Updates README.md with Nutrient rebranding changes. (J#HG-681)
+
+## 3.0.0 - 01 Aug 2025
+
+_[Migration guide](https://www.nutrient.io/guides/react-native/migration-guides/react-native-3-migration-guide/)._
+
+- Adds the `onReady` callback to `NutrientView` to make functional component integration easier. (J#HYB-809)
+- Updates SDK to Nutrient branding. The new package name is now `@nutrient-sdk/react-native`. (J#HG-681)
+- Updates to Nutrient Android SDK 10.5.0.
+- Updates to Nutrient iOS SDK 14.11.0.
+
+## 2.19.1 - 24 Jul 2025
+
+- Fixes an issue where `PSPDFKitView` component props weren’t reliably applied on Android. (J#HYB-836)
+
+## 2.19.0 - 02 Jul 2025
 
 - Adds the `androidRemoveStatusBarOffset` property to the `PDFConfiguration` object on Android. (J#HYB-802)
 - Adds the `iOSFileConflictResolution` option to `PDFConfiguration` to manage file conflict resolution on iOS. (J#HYB-825)
 - Adds the `iOSDocumentInfoOptions` option to `PDFConfiguration` to customize Document Info tabs on iOS. (J#HYB-826)
 - Adds the `setExcludedAnnotations` API to exclude specified annotations completely from selection. (J#HYB-823)
 - Adds the `bookmarksChanged` event to `NotificationCenter` to receive bookmark change events. (J#HYB-818)
-- Adds the `getBookmarks`, `addBookmarks` and `removeBookmarks` APIs to `PDFDocument` for bookmark management. (J#HYB-818)
-- Fixes an issue where the `enterAnnotationCreationMode` API does not honour annotation variant options. (J#HYB-814)
+- Adds the `getBookmarks`, `addBookmarks`, and `removeBookmarks` APIs to `PDFDocument` for bookmark management. (J#HYB-818)
+- Updates to Nutrient Android SDK 10.4.1.
+- Updates to Nutrient iOS SDK 14.10.0.
+- Fixes an issue where the `enterAnnotationCreationMode` API does not honor annotation variant options. (J#HYB-814)
 - Fixes an issue where the `enterAnnotationCreationMode` API on iOS could not change tools when already active. (J#HYB-815)
 - Fixes an issue where `AnnotationsEvent.REMOVED` contained null `name` and `creatorName` properties on Android. (J#HYB-829)
 
 ## 2.18.1 - 24 Jun 2025
+
 - Updates to Nutrient Android SDK 10.4.0.
 - Fixes an issue where the `enterAnnotationCreationMode` and `exitCurrentlyActiveMode` calls on Android resolved before being complete. (J#HYB-824)
 - Fixes an issue where setting the `pageIndex` property could result in a crash on Android. (J#HYB-817)
@@ -23,9 +80,9 @@
 - Updates to Nutrient Android SDK 10.2.0.
 - Updates to Nutrient iOS SDK 14.8.0.
 - Fixes an issue where the `setLicenseKeys` API could cause a crash on Android if called too early during the application lifecycle. (J#HYB-790)
-- Fixes an issue where `NotificationCenter` events aren't always delivered when running the Release build configuration on iOS. (J#HYB-793)
-- Fixes an issue where toolbar button customization wasn't persisted on Android during component reload. (J#HYB-800)
-- Fixes an issue where the `onAnnotationTapped` callback wasn't called reliably on Android. (J#HYB-805)
+- Fixes an issue where `NotificationCenter` events aren’t always delivered when running the Release build configuration on iOS. (J#HYB-793)
+- Fixes an issue where toolbar button customization wasn’t persisted on Android during component reload. (J#HYB-800)
+- Fixes an issue where the `onAnnotationTapped` callback wasn’t called reliably on Android. (J#HYB-805)
 
 ## 2.17.0 - 14 Apr 2025
 
@@ -61,11 +118,11 @@
 - Updates to Nutrient iOS SDK 14.5.0.
 - Updates Android `minSdkVersion` to API 24.
 - Updates the iOS deployment target to iOS 16. (#46035)
-- Fixes an issue where the `pageMargins` property used by the PDF generation API wasn't being used by Android. (J#HYB-555)
+- Fixes an issue where the `pageMargins` property used by the PDF generation API wasn’t being used by Android. (J#HYB-555)
 - Fixes an issue where the `documentPageChanged` event fired while the page change was still in progress on iOS. (J#HYB-644)
 - Fixes an issue where the `getConfiguration` API on Android returned inaccurate results. (J#HYB-648)
-- Removes the measurements `point` unit, as it isn't supported anymore. (#46035)
-- Removes the `iOSAllowedMenuAction` configuration property, as it isn't supported anymore. (#46035)
+- Removes the measurements `point` unit, as it isn’t supported anymore. (#46035)
+- Removes the `iOSAllowedMenuAction` configuration property, as it isn’t supported anymore. (#46035)
 
 ## 2.15.0 - 13 Dec 2024
 
@@ -81,7 +138,7 @@
 - Adds the ability to hide the main toolbar on Android using a combination of configuration and style properties. (J#HYB-431)
 - Updates to Nutrient Android SDK 2024.6.1.
 - Updates to Nutrient iOS SDK 14.1.1.
-- Fixes an issue where the correct items weren't rendered when using the `menuItemGrouping` configuration property. (J#HYB-432)
+- Fixes an issue where the correct items weren’t rendered when using the `menuItemGrouping` configuration property. (J#HYB-432)
 - Fixes an issue where a crash occurred when using the `toolbar.toolbarMenuItems` property and `enterAnnotationCreationMode` API on Android. (J#HYB-517)
 - Fixes an issue where some annotations would not be deleted on iOS when using the `removeAnnotations` API. (J#HYB-518)
 
@@ -92,9 +149,9 @@
 - Adds support to select and deselect annotations programmatically. (J#HYB-447)
 - Updates to PSPDFKit 2024.5.1 for Android.
 - Updates to PSPDFKit 13.9.1 for iOS.
-- Fixes an issue where certain annotation presets weren't applied correctly. (J#HYB-395)
+- Fixes an issue where certain annotation presets weren’t applied correctly. (J#HYB-395)
 - Fixes an issue where custom toolbar buttons were not applied on the Android toolbar. (J#HYB-482)
-- Fixes an issue where the `annotationTypes` parameter wasn't honored by the `processAnnotations` API. (J#HYB-495)
+- Fixes an issue where the `annotationTypes` parameter wasn’t honored by the `processAnnotations` API. (J#HYB-495)
 - Fixes an issue where the `onDocumentLoadFailed` callback was not triggered when an incorrect document password was specified on Android. (J#HYB-491)
 - Fixes an issue where some measurement annotation presets were not applied when specified. (J#HYB-492)
 
@@ -115,8 +172,8 @@
 - Adds support for opening PDF documents from a remote URL. (J#HYB-354)
 - Updates `setAnnotationFlags` and `getAnnotationFlags` APIs to support using annotation `name` as an identifier. (J#HYB-372)
 - Fixes an issue where calling `exitCurrentlyActiveMode` while not in annotation editing mode generates an exception on iOS. (J#HYB-373)
-- Fixes an issue where the annotation `uuid` isn't included in `onAnnotationTapped` callbacks. (J#HYB-374)
-- Fixes an issue where Instant configuration wasn't applied when using the `presentInstant` API on iOS. (J#HYB-375)
+- Fixes an issue where the annotation `uuid` isn’t included in `onAnnotationTapped` callbacks. (J#HYB-374)
+- Fixes an issue where Instant configuration wasn’t applied when using the `presentInstant` API on iOS. (J#HYB-375)
 
 ## 2.10.0 - 06 May 2024
 

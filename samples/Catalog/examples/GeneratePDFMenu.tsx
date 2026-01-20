@@ -10,9 +10,23 @@ import {
 
 import { pspdfkitColor } from '../configuration/Constants';
 
-const PSPDFKit = NativeModules.PSPDFKit;
+const Nutrient = NativeModules.Nutrient;
 import { generatePDFMenu } from '../ExamplesNavigationMenu';
 import styles from '../styles/styles';
+
+// Helper to get version string that works in both Paper and New Architecture
+const getVersionString = (): string => {
+  // @ts-ignore - versionString can be either a function (New Arch) or property (Paper)
+  if (typeof Nutrient.versionString === 'function') {
+    // New Architecture: versionString is a function
+    // @ts-ignore
+    return (Nutrient.versionString as () => string)();
+  } else {
+    // Paper: versionString is a property
+    // @ts-ignore
+    return Nutrient.versionString as string;
+  }
+};
 
 class GeneratePDFMenu extends Component {
   override render() {
@@ -23,7 +37,7 @@ class GeneratePDFMenu extends Component {
             source={require('../assets/logo-flat.png')}
             style={styles.logo}
           />
-          <Text style={styles.version}>{PSPDFKit.versionString}</Text>
+          <Text style={styles.version}>{getVersionString()}</Text>
         </View>
         <FlatList
           data={generatePDFMenu}

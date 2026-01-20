@@ -1,12 +1,26 @@
 import examples from '../ExamplesNavigationMenu';
 
 const { View, Image, Text, FlatList } = require('react-native');
-const { PSPDFKit } = require('../helpers/PSPDFKit');
+const { Nutrient } = require('../helpers/Nutrient');
 import React, { Component } from 'react';
 import { TouchableHighlight } from 'react-native';
 
 import { pspdfkitColor } from '../configuration/Constants';
 import styles from '../styles/styles';
+
+// Helper to get version string that works in both Paper and New Architecture
+const getVersionString = (): string => {
+  // @ts-ignore - versionString can be either a function (New Arch) or property (Paper)
+  if (typeof Nutrient.versionString === 'function') {
+    // New Architecture: versionString is a function
+    // @ts-ignore
+    return (Nutrient.versionString as () => string)();
+  } else {
+    // Paper: versionString is a property
+    // @ts-ignore
+    return Nutrient.versionString as string;
+  }
+};
 
 class HomeScreen extends Component {
   exampleList = examples.filter(item => item && item?.name !== null);
@@ -41,7 +55,7 @@ class HomeScreen extends Component {
             source={require('../assets/logo-flat.png')}
             style={styles.logo}
           />
-          <Text style={styles.version}>{PSPDFKit.versionString}</Text>
+          <Text style={styles.version}>{getVersionString()}</Text>
         </View>
         <FlatList
           nativeID="catalog_list"

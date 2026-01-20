@@ -34,8 +34,15 @@ import com.pspdfkit.annotations.configuration.AnnotationConfiguration;
 import com.pspdfkit.annotations.Annotation;
 import com.pspdfkit.preferences.PSPDFKitPreferences;
 import com.pspdfkit.react.annotations.ReactAnnotationPresetConfiguration;
+import com.pspdfkit.react.AnnotationConfigurationAdaptor;
+import com.pspdfkit.react.ConfigurationAdapter;
 import com.pspdfkit.react.events.PdfViewDataReturnedEvent;
 import com.pspdfkit.react.menu.ReactGroupingRule;
+import com.pspdfkit.react.common.NutrientPropsAnnotationsHelper;
+import com.pspdfkit.react.common.NutrientPropsDocumentHelper;
+import com.pspdfkit.react.ToolbarMenuItemsAdapter;
+import com.pspdfkit.react.common.NutrientPropsToolbarHelper;
+import com.pspdfkit.react.common.NutrientPropsMeasurementConfigurationHelper;
 import com.pspdfkit.views.PdfView;
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
 import org.json.JSONObject;
@@ -101,7 +108,7 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
         if (currentActivity instanceof FragmentActivity) {
             // Since we require a FragmentManager this only works in FragmentActivities.
             FragmentActivity fragmentActivity = (FragmentActivity) reactContext.getCurrentActivity();
-            PdfView pdfView = new PdfView(reactContext);
+            PdfView pdfView = new PdfView(reactContext, false); // Paper mode
             pdfView.inject(fragmentActivity.getSupportFragmentManager(),
                     UIManagerHelper.getEventDispatcher(reactContext, pdfView.getId()));
             return pdfView;
@@ -148,65 +155,97 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
         return commandMap;
     }
 
-    @ReactProp(name = "documentWithOrderedProps")
-    public void setDocumentWithOrderedProps(PdfView view, @Nullable ReadableMap orderedProps) {
-       if (orderedProps == null) return;
+    @ReactProp(name = "documentAndConfiguration")
+    public void setDocumentAndConfiguration(PdfView view, @Nullable ReadableMap documentAndConfiguration) {
+       if (documentAndConfiguration == null) return;
        
-       // Process in exact order
-       if (orderedProps.hasKey("configuration") && !orderedProps.isNull("configuration")) {
-           ReadableMap configuration = orderedProps.getMap("configuration");
+       // Process configuration first
+       if (documentAndConfiguration.hasKey("configuration") && !documentAndConfiguration.isNull("configuration")) {
+           ReadableMap configuration = documentAndConfiguration.getMap("configuration");
            setConfiguration(view, configuration);
        }
        
-       if (orderedProps.hasKey("annotationPresets") && !orderedProps.isNull("annotationPresets")) {
-           ReadableMap annotationPresets = orderedProps.getMap("annotationPresets");
-           List<ReactAnnotationPresetConfiguration> annotationsConfiguration = AnnotationConfigurationAdaptor.convertAnnotationConfigurations(
-               view.getContext(), annotationPresets
-           );
-           view.setAnnotationConfiguration(annotationsConfiguration);
-       }
-       
-       if (orderedProps.hasKey("fragmentTag") && !orderedProps.isNull("fragmentTag")) {
-           String fragmentTag = orderedProps.getString("fragmentTag");
-           view.setFragmentTag(fragmentTag);
-       }
-       
-       if (orderedProps.hasKey("menuItemGrouping") && !orderedProps.isNull("menuItemGrouping")) {
-           ReadableArray menuItemGrouping = orderedProps.getArray("menuItemGrouping");
-           ReactGroupingRule groupingRule = new ReactGroupingRule(view.getContext(), menuItemGrouping);
-           view.setMenuItemGroupingRule(groupingRule);
-       }
-       
-       // Load document
-       if (orderedProps.hasKey("document") && !orderedProps.isNull("document")) {
-           String document = orderedProps.getString("document");
+       // Then load document
+       if (documentAndConfiguration.hasKey("document") && !documentAndConfiguration.isNull("document")) {
+           String document = documentAndConfiguration.getString("document");
            // Always set the document, even if it's the same path, to ensure it loads
-           view.setDocument(document, this.reactApplicationContext);
-       }
-       
-       // Process post-document props
-       if (orderedProps.hasKey("pageIndex") && !orderedProps.isNull("pageIndex")) {
-           int pageIndex = orderedProps.getInt("pageIndex");
-           view.setPageIndex(pageIndex);
-       }
-       
-       if (orderedProps.hasKey("toolbar") && !orderedProps.isNull("toolbar")) {
-           ReadableMap toolbar = orderedProps.getMap("toolbar");
-           setToolbar(view, toolbar);
-       }
-       
-       if (orderedProps.hasKey("toolbarMenuItems") && !orderedProps.isNull("toolbarMenuItems")) {
-           ReadableArray toolbarMenuItems = orderedProps.getArray("toolbarMenuItems");
-           setToolbarMenuItems(view, toolbarMenuItems);
-       }
-       
-       if (orderedProps.hasKey("annotationContextualMenu") && !orderedProps.isNull("annotationContextualMenu")) {
-           ReadableMap annotationContextualMenu = orderedProps.getMap("annotationContextualMenu");
-           setAnnotationContextualMenu(view, annotationContextualMenu);
+           view.setDocument(document, this.reactApplicationContext, null);
        }
    }
 
+    @ReactProp(name = "fragmentTag")
+    public void setFragmentTag(PdfView view, @NonNull String fragmentTag) {
+        view.setFragmentTag(fragmentTag);
+    }
 
+    // Helper method for setDocumentAndConfiguration (not @ReactProp method)
+    private void setConfiguration(PdfView view, @NonNull ReadableMap configuration) {
+        ConfigurationAdapter configurationAdapter = new ConfigurationAdapter(view.getContext(), configuration);
+        PdfActivityConfiguration configurationBuild = configurationAdapter.build();
+        view.setInitialConfiguration(configurationBuild);
+        // If there are pending toolbar items, we need to apply them.
+        if (view.getPendingToolbarItems() != null) {
+            ToolbarMenuItemsAdapter newConfigurations = new ToolbarMenuItemsAdapter(configurationBuild, view.getPendingToolbarItems(), view.getInitialConfiguration());
+            view.setConfiguration(newConfigurations.build());
+        } else {
+            view.setConfiguration(configurationBuild);
+        }
+        view.setDocumentPassword(configuration.getString("documentPassword"));
+        view.setRemoteDocumentConfiguration(configuration.getMap("remoteDocumentConfiguration"));
+        // Although MeasurementValueConfigurations is specified as part of Configuration, it is configured separately on the Android SDK
+        if (configuration.getArray("measurementValueConfigurations") != null) {
+            NutrientPropsMeasurementConfigurationHelper.setMeasurementValueConfigurations(view, configuration.getArray("measurementValueConfigurations"));
+        }
+        if (configuration.getMap("aiAssistantConfiguration") != null) {
+            view.setAIAConfiguration(configuration.getMap("aiAssistantConfiguration"));
+        }
+        if (configuration.hasKey("androidRemoveStatusBarOffset")) {
+            view.setIsStatusBarHidden(configuration.getBoolean("androidRemoveStatusBarOffset"));
+        }
+    }
+
+    @ReactProp(name = "annotationPresets")
+    public void setAnnotationPresets(PdfView view, @NonNull ReadableMap annotationPresets) {
+        List<ReactAnnotationPresetConfiguration> annotationsConfiguration = AnnotationConfigurationAdaptor.convertAnnotationConfigurations(
+                view.getContext(), annotationPresets
+        );
+        view.setAnnotationConfiguration(annotationsConfiguration);
+    }
+
+    @ReactProp(name = "pageIndex")
+    public void setPageIndex(PdfView view, int pageIndex) {
+        view.setPageIndex(pageIndex);
+    }
+
+    @ReactProp(name = "toolbar")
+    public void setToolbar(@NonNull final PdfView view, @NonNull ReadableMap toolbar) {
+        NutrientPropsToolbarHelper.applyToolbar(view, toolbar);
+    }
+
+    @ReactProp(name = "menuItemGrouping")
+    public void setMenuItemGrouping(PdfView view, @NonNull ReadableArray menuItemGrouping) {
+        ReactGroupingRule groupingRule = new ReactGroupingRule(view.getContext(), menuItemGrouping);
+        view.setMenuItemGroupingRule(groupingRule);
+    }
+
+    @ReactProp(name = "toolbarMenuItems")
+    public void setToolbarMenuItems(@NonNull final PdfView view, @Nullable final ReadableArray toolbarItems) {
+        if (toolbarItems != null) {
+            PdfActivityConfiguration currentConfiguration = view.getConfiguration();
+            ToolbarMenuItemsAdapter newConfigurations = new ToolbarMenuItemsAdapter(currentConfiguration, toolbarItems, view.getInitialConfiguration());
+            // If the initial config is null, it means that the user-provided config has not been applied yet, so we set toolbar items as pending.
+            if (view.getInitialConfiguration() == null) {
+                view.setPendingToolbarItems(toolbarItems);
+            } else {
+                view.setConfiguration(newConfigurations.build());
+            }
+        }
+    }
+
+    @ReactProp(name = "annotationContextualMenu")
+    public void setAnnotationContextualMenu(@NonNull final PdfView view, @NonNull ReadableMap annotationContextualMenuItems) {
+        NutrientPropsAnnotationsHelper.applyAnnotationContextualMenu(view, annotationContextualMenuItems);
+    }
 
     @ReactProp(name = "disableDefaultActionForTappedAnnotations")
     public void setDisableDefaultActionForTappedAnnotations(PdfView view, boolean disableDefaultActionForTappedAnnotations) {
@@ -228,113 +267,29 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
         view.setImageSaveMode(imageSaveMode);
     }
 
-
-
     @ReactProp(name = "showNavigationButtonInToolbar")
     public void setShowNavigationButtonInToolbar(@NonNull final PdfView view, final boolean showNavigationButtonInToolbar) {
-        view.setShowNavigationButtonInToolbar(showNavigationButtonInToolbar);
+        NutrientPropsDocumentHelper.applyShowNavigationButtonInToolbar(view, showNavigationButtonInToolbar);
     }
 
     @ReactProp(name= "hideDefaultToolbar")
     public void setHideDefaultToolbar(@NonNull final PdfView view, final boolean hideDefaultToolbar) {
-        view.setHideDefaultToolbar(hideDefaultToolbar);
+        NutrientPropsDocumentHelper.applyHideDefaultToolbar(view, hideDefaultToolbar);
     }
 
     @ReactProp(name = "availableFontNames")
     public void setAvailableFontNames(@NonNull final PdfView view, @Nullable final ReadableArray availableFontNames) {
-        view.setAvailableFontNames(availableFontNames);
+        NutrientPropsDocumentHelper.applyAvailableFontNames(view, availableFontNames);
     }
 
     @ReactProp(name = "selectedFontName")
     public void setSelectedFontName(@NonNull final PdfView view, @Nullable final String selectedFontName) {
-        view.setSelectedFontName(selectedFontName);
-    }
-
-    // Helper methods for setDocumentWithOrderedProps (not @ReactProp methods)
-    private void setConfiguration(PdfView view, @NonNull ReadableMap configuration) {
-        ConfigurationAdapter configurationAdapter = new ConfigurationAdapter(view.getContext(), configuration);
-        PdfActivityConfiguration configurationBuild = configurationAdapter.build();
-        view.setInitialConfiguration(configurationBuild);
-        // If there are pending toolbar items, we need to apply them.
-        if (view.getPendingToolbarItems() != null) {
-            ToolbarMenuItemsAdapter newConfigurations = new ToolbarMenuItemsAdapter(configurationBuild, view.getPendingToolbarItems(), view.getInitialConfiguration());
-            view.setConfiguration(newConfigurations.build());
-        } else {
-            view.setConfiguration(configurationBuild);
-        }
-        view.setDocumentPassword(configuration.getString("documentPassword"));
-        view.setRemoteDocumentConfiguration(configuration.getMap("remoteDocumentConfiguration"));
-        // Although MeasurementValueConfigurations is specified as part of Configuration, it is configured separately on the Android SDK
-        if (configuration.getArray("measurementValueConfigurations") != null) {
-            view.setMeasurementValueConfigurations(configuration.getArray("measurementValueConfigurations"));
-        }
-        if (configuration.getMap("aiAssistantConfiguration") != null) {
-            view.setAIAConfiguration(configuration.getMap("aiAssistantConfiguration"));
-        }
-        if (configuration.hasKey("androidRemoveStatusBarOffset")) {
-            view.setIsStatusBarHidden(configuration.getBoolean("androidRemoveStatusBarOffset"));
-        }
-    }
-
-    private void setToolbar(@NonNull final PdfView view, @NonNull ReadableMap toolbar) {
-        if (toolbar.hasKey("toolbarMenuItems")) {
-            ReadableMap toolbarMenuItems = toolbar.getMap("toolbarMenuItems");
-            ArrayList buttons = toolbarMenuItems.getArray("buttons").toArrayList();
-            WritableArray stockToolbarItems = new WritableNativeArray();
-            ArrayList customToolbarItems = new ArrayList();
-            for (int i = 0; i < buttons.size(); i++) {
-                Object item = buttons.get(i);
-                if (item instanceof String) {
-                    stockToolbarItems.pushString((String) item);
-                } else if (item instanceof HashMap) {
-                    ((HashMap<String, Integer>) item).put("index", i);
-                    customToolbarItems.add(item);
-                }
-            }
-
-            if (stockToolbarItems != null) {
-                PdfActivityConfiguration currentConfiguration = view.getConfiguration();
-                ToolbarMenuItemsAdapter newConfigurations = new ToolbarMenuItemsAdapter(currentConfiguration, stockToolbarItems, view.getInitialConfiguration());
-                // If the initial config is null, it means that the user-provided config has not been applied yet, so we set toolbar items as pending.
-                if (view.getInitialConfiguration() == null) {
-                    view.setPendingToolbarItems(stockToolbarItems);
-                } else {
-                    view.setConfiguration(newConfigurations.build());
-                }
-            }
-            view.setAllToolbarItems(stockToolbarItems.toArrayList(), customToolbarItems);
-        }
-    }
-
-    private void setMenuItemGrouping(PdfView view, @NonNull ReadableArray menuItemGrouping) {
-        ReactGroupingRule groupingRule = new ReactGroupingRule(view.getContext(), menuItemGrouping);
-        view.setMenuItemGroupingRule(groupingRule);
-    }
-
-    private void setToolbarMenuItems(@NonNull final PdfView view, @Nullable final ReadableArray toolbarItems) {
-        if (toolbarItems != null) {
-            PdfActivityConfiguration currentConfiguration = view.getConfiguration();
-            ToolbarMenuItemsAdapter newConfigurations = new ToolbarMenuItemsAdapter(currentConfiguration, toolbarItems, view.getInitialConfiguration());
-            // If the initial config is null, it means that the user-provided config has not been applied yet, so we set toolbar items as pending.
-            if (view.getInitialConfiguration() == null) {
-                view.setPendingToolbarItems(toolbarItems);
-            } else {
-                view.setConfiguration(newConfigurations.build());
-            }
-        }
-    }
-
-    private void setAnnotationContextualMenu(@NonNull final PdfView view, @NonNull ReadableMap annotationContextualMenuItems) {
-        if (annotationContextualMenuItems != null) {
-            view.setAnnotationToolbarMenuButtonItems(annotationContextualMenuItems);
-        }
+        NutrientPropsDocumentHelper.applySelectedFontName(view, selectedFontName);
     }
 
     @ReactProp(name = "measurementValueConfigurations")
     public void setMeasurementValueConfigurations(@NonNull final PdfView view, @Nullable final ReadableArray measurementValueConfigs) {
-        if (measurementValueConfigs != null) {
-            view.setMeasurementValueConfigurations(measurementValueConfigs);
-        }
+        NutrientPropsMeasurementConfigurationHelper.setMeasurementValueConfigurations(view, measurementValueConfigs);
     }
 
     @Nullable
@@ -499,7 +454,7 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
             case COMMAND_SET_MEASUREMENT_VALUE_CONFIGURATIONS:
                 if (args != null && args.size() == 2) {
                     final int requestId = args.getInt(0);
-                    setMeasurementValueConfigurations(root, args.getArray(1));
+                    NutrientPropsMeasurementConfigurationHelper.setMeasurementValueConfigurations(root, args.getArray(1));
                     root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, true));
                 }
                 break;
@@ -507,7 +462,7 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
                 if (args != null) {
                     final int requestId = args.getInt(0);
                     try {
-                        JSONObject result = root.getMeasurementValueConfigurations();
+                        JSONObject result = NutrientPropsMeasurementConfigurationHelper.getMeasurementValueConfigurations(root);
                         root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, result));
                     } catch (Exception e) {
                         root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, e));

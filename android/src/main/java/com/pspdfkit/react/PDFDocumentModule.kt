@@ -26,6 +26,7 @@ import com.pspdfkit.document.providers.DataProvider
 import com.pspdfkit.forms.ChoiceFormElement
 import com.pspdfkit.forms.ComboBoxFormElement
 import com.pspdfkit.forms.EditableButtonFormElement
+import com.pspdfkit.forms.SignatureFormElement
 import com.pspdfkit.forms.TextFormElement
 import com.pspdfkit.react.helper.AnnotationUtils
 import com.pspdfkit.react.helper.BookmarkUtils
@@ -53,6 +54,49 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
     
     private fun getDocument(reference: Int): DocumentData? {
         return this.documents[reference]
+    }
+
+    @ReactMethod fun setAnnotationFlags(reference: Int, uuid: String, flags: ReadableArray, promise: Promise) {
+        try {
+            this.getDocument(reference)?.document?.let { document ->
+                val allAnnotations = document.annotationProvider.getAllAnnotationsOfType(ALL_ANNOTATION_TYPES)
+                var found = false
+                for (annotation in allAnnotations) {
+                    if (annotation.uuid == uuid || (annotation.name != null && annotation.name == uuid)) {
+                        val convertedFlags = com.pspdfkit.react.helper.ConversionHelpers.getAnnotationFlags(flags)
+                        annotation.flags = convertedFlags
+                        found = true
+                        break
+                    }
+                }
+                promise.resolve(found)
+            } ?: run {
+                promise.reject("setAnnotationFlags", "Document is nil")
+            }
+        } catch (e: Throwable) {
+            promise.reject("setAnnotationFlags", e)
+        }
+    }
+
+    @ReactMethod fun getAnnotationFlags(reference: Int, uuid: String, promise: Promise) {
+        try {
+            this.getDocument(reference)?.document?.let { document ->
+                val allAnnotations = document.annotationProvider.getAllAnnotationsOfType(ALL_ANNOTATION_TYPES)
+                var convertedFlags = ArrayList<String>()
+                for (annotation in allAnnotations) {
+                    if (annotation.uuid == uuid || (annotation.name != null && annotation.name == uuid)) {
+                        val flags = annotation.flags
+                        convertedFlags = com.pspdfkit.react.helper.ConversionHelpers.convertAnnotationFlags(flags)
+                        break
+                    }
+                }
+                promise.resolve(Arguments.makeNativeArray(convertedFlags))
+            } ?: run {
+                promise.reject("getAnnotationFlags", "Document is nil")
+            }
+        } catch (e: Throwable) {
+            promise.reject("getAnnotationFlags", e)
+        }
     }
 
     private fun getDocumentConfiguration(reference: Int): MutableMap<String, Any>? {
@@ -90,9 +134,16 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
     @ReactMethod fun getPageInfo(reference: Int, pageIndex: Int, promise: Promise) {
         try {
             val rotation = this.getDocument(reference)?.document?.getPageRotation(pageIndex);
+            val size = this.getDocument(reference)?.document?.getPageSize(pageIndex);
             val result = Arguments.createMap()
             if (rotation != null) {
                 result.putInt("savedRotation", rotation)
+            }
+            if (size != null) {
+                val sizeMap = Arguments.createMap()
+                sizeMap.putDouble("height", size.height.toDouble())
+                sizeMap.putDouble("width", size.width.toDouble())
+                result.putMap("size", sizeMap)
             }
             promise.resolve(result);
         } catch (e: Throwable) {
@@ -343,7 +394,7 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
     @ReactMethod fun applyInstantJSON(reference: Int, instantJSON: ReadableMap, promise: Promise) {
         try {
             this.getDocument(reference)?.document?.let {
-                val json = (instantJSON.toHashMap() as Map<*, *>?)?.let { it1 -> JSONObject(it1) }
+                val json = (instantJSON.toHashMap() as? Map<*, *>)?.let { it1 -> JSONObject(it1) }
                 val dataProvider: DataProvider = DocumentJsonDataProvider(json)
                 DocumentJsonFormatter.importDocumentJsonAsync(it, dataProvider)
                     .subscribeOn(Schedulers.io())
@@ -452,64 +503,53 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
         try {
             this.getDocument(reference)?.document?.let {
 
-                it.formProvider.getFormElementWithNameAsync(fullyQualifiedName)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                        { formElement ->
-                            var success = false
-                            
-                            when (formElement) {
-                                is EditableButtonFormElement -> {
-                                    if (value.type == ReadableType.Boolean) {
-                                        if (value.asBoolean()) {
-                                            formElement.select()
-                                        } else {
-                                            formElement.deselect()
-                                        }
-                                        success = true
-                                    }
-                                }
-                                is ChoiceFormElement -> {
-                                    if (value.type == ReadableType.Array) {
-                                        val indices = value.asArray()?.toArrayList()
-                                            ?.filterIsInstance<Int>()
-                                        if (indices != null) {
-                                            formElement.selectedIndexes = indices
-                                        }
-                                        success = true
-                                    } else if (value.type == ReadableType.String) {
-                                        try {
-                                            val index = value.asString()?.toInt()
-                                            formElement.selectedIndexes = listOf(index)
-                                            success = true
-                                        } catch (e: NumberFormatException) {
-                                            // Handle custom text for combo box
-                                            if (formElement is ComboBoxFormElement) {
-                                                formElement.customText = value.asString()
-                                                success = true
-                                            }
-                                        }
-                                    }
-                                }
-                                is TextFormElement -> {
-                                    if (value.type == ReadableType.String) {
-                                        value.asString()?.let { it1 -> formElement.setText(it1) }
-                                        success = true
-                                    }
-                                }
-                            }
+                var formElement = it.formProvider.getFormFieldWithFullyQualifiedName(fullyQualifiedName)?.formElement
+                if (formElement == null) {
+                    formElement = it.formProvider.getFormElementWithName(fullyQualifiedName)
+                }
+                var success = false
 
-                            if (success) {
-                                promise.resolve(true)
+                when (formElement) {
+                    is EditableButtonFormElement -> {
+                        if (value.type == ReadableType.Boolean) {
+                            if (value.asBoolean()) {
+                                formElement.select()
                             } else {
-                                promise.reject("updateFormFieldValue", "Could not update form field value")
+                                formElement.deselect()
                             }
-                        },
-                        { e ->
-                            promise.reject("updateFormFieldValue", e)
+                            success = true
                         }
-                    )
+                    }
+                    is ChoiceFormElement -> {
+                        if (value.type == ReadableType.Array) {
+                            val indices: MutableList<Int>? = value.asArray()?.toArrayList()
+                                ?.filterIsInstance<Number>()
+                                ?.map { it.toInt() }
+                                ?.toMutableList()
+                            if (indices != null) {
+                                formElement.selectedIndexes = indices
+                                success = true
+                            }
+                        } else if (value.type == ReadableType.String) {
+                            if (formElement is ComboBoxFormElement) {
+                                formElement.customText = value.asString()
+                                success = true
+                            }
+                        }
+                    }
+                    is TextFormElement -> {
+                        if (value.type == ReadableType.String) {
+                            value.asString()?.let { it1 -> formElement.setText(it1) }
+                            success = true
+                        }
+                    }
+                }
+
+                if (success) {
+                    promise.resolve(true)
+                } else {
+                    promise.reject("updateFormFieldValue", "Could not update form field value")
+                }
             }
         } catch (e: Throwable) {
             promise.reject("updateFormFieldValue", e)
@@ -573,6 +613,43 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
 
         } catch (e: Throwable) {
             promise.reject("removeBookmarks error", e)
+        }
+    }
+
+    @ReactMethod fun getOverlappingSignature(reference: Int, fullyQualifiedName: String, promise: Promise) {
+        try {
+            this.getDocument(reference)?.document?.let { document ->
+
+                val formElement = document.formProvider.getFormFieldWithFullyQualifiedName(fullyQualifiedName)?.formElement
+
+                // Check if formElement was found
+                if (formElement == null) {
+                    promise.reject("getOverlappingSignature", "Form element not found")
+                    return@let
+                }
+
+                // Check if it's a SignatureFormElement and get the overlapping annotation
+                val overlappingAnnotation = if (formElement is SignatureFormElement) {
+                    formElement.getOverlappingSignatures()
+                } else {
+                    null
+                }
+
+                // Check if overlapping annotation was found
+                if (overlappingAnnotation == null || overlappingAnnotation.size == 0) {
+                    promise.reject("getOverlappingSignature", "No overlaps found")
+                    return@let
+                }
+
+                // Convert annotation to map using AnnotationUtils
+                val annotationMap = AnnotationUtils.processAnnotation(overlappingAnnotation.first())
+                val nativeMap = Arguments.makeNativeMap(annotationMap)
+                promise.resolve(nativeMap)
+            } ?: run {
+                promise.reject("getOverlappingSignature", "Document is nil")
+            }
+        } catch (e: Throwable) {
+            promise.reject("getOverlappingSignature", e)
         }
     }
 
