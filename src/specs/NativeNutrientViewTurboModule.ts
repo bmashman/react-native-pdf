@@ -101,9 +101,8 @@ export interface PDFConfiguration {
 export interface Spec extends TurboModule {
   // Annotation creation and management
   enterAnnotationCreationMode: (reference: string, annotationType?: string) => Promise<boolean>;
+  enterContentEditingMode: (reference: string) => Promise<boolean>;
   exitCurrentlyActiveMode: (reference: string) => Promise<boolean>;
-  clearSelectedAnnotations: (reference: string) => Promise<boolean>;
-  selectAnnotations: (reference: string, annotationsJSONString: string, showContextualMenu?: boolean) => Promise<boolean>;
   
   // Document operations
   setPageIndex: (reference: string, pageIndex: number, animated: boolean) => Promise<boolean>;
@@ -115,6 +114,7 @@ export interface Spec extends TurboModule {
   getMeasurementValueConfigurations: (reference: string) => Promise<MeasurementValueConfiguration[]>;
   getConfiguration: (reference: string) => Promise<PDFConfiguration>;
   setExcludedAnnotations: (reference: string, annotations: string[]) => void;
+  setUserInterfaceVisible: (reference: string, visible: boolean) => Promise<boolean>;
   destroyView: (reference: string) => void;
 }
 

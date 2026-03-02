@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+ * Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
  *
  * THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  * AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -97,10 +97,10 @@ public class NutrientViewTurboModule extends NativeNutrientViewTurboModuleSpec {
             promise.reject(Errors.MODE_ERROR, e.getMessage());
         }
     }
-
+    
     @Override
-    public void clearSelectedAnnotations(String reference, Promise promise) {
-        Log.d(TAG, "clearSelectedAnnotations called with reference: " + reference);
+    public void enterContentEditingMode(String reference, Promise promise) {
+        Log.d(TAG, "enterContentEditingMode called with reference: " + reference);
         
         PdfView view = NutrientViewRegistry.getInstance().getViewForId(reference);
         if (view == null) {
@@ -109,33 +109,17 @@ public class NutrientViewTurboModule extends NativeNutrientViewTurboModuleSpec {
         }
         
         try {
-            view.clearSelectedAnnotations();
-            promise.resolve(true);
+            view.enterContentEditingMode(
+                () -> promise.resolve(true),
+                throwable -> {
+                    promise.reject(Errors.MODE_ERROR, throwable.getMessage());
+                }
+            );
         } catch (Exception e) {
-            promise.reject(Errors.OPERATION_FAILED, e.getMessage());
+            promise.reject(Errors.MODE_ERROR, e.getMessage());
         }
     }
-
-    @Override
-    public void selectAnnotations(String reference, String annotationsJSONString, Boolean showContextualMenu, Promise promise) {
-        Log.d(TAG, "selectAnnotations called with reference: " + reference + ", annotations: " + annotationsJSONString);
-        
-        PdfView view = NutrientViewRegistry.getInstance().getViewForId(reference);
-        if (view == null) {
-            promise.reject(Errors.VIEW_NOT_FOUND, "No view found for reference: " + reference);
-            return;
-        }
-        
-        try {
-            // Convert JSON string to ReadableArray
-            ReadableArray annotationsArray = jsonStringToReadableArray(annotationsJSONString);
-            // Use Promise-based version for Fabric mode
-            view.selectAnnotations(0, annotationsArray, showContextualMenu, promise);
-        } catch (Exception e) {
-            promise.reject(Errors.OPERATION_FAILED, e.getMessage());
-        }
-    }
-
+    
     @Override
     public void setPageIndex(String reference, double pageIndex, boolean animated, Promise promise) {
         Log.d(TAG, "setPageIndex called with reference: " + reference + ", pageIndex: " + pageIndex + ", animated: " + animated);
@@ -250,6 +234,24 @@ public class NutrientViewTurboModule extends NativeNutrientViewTurboModuleSpec {
             view.setExcludedAnnotations(annotations);
         } catch (Exception e) {
             Log.e(TAG, "Error setting excluded annotations: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void setUserInterfaceVisible(String reference, boolean visible, Promise promise) {
+        Log.d(TAG, "setUserInterfaceVisible called with reference: " + reference + ", visible: " + visible);
+        
+        PdfView view = NutrientViewRegistry.getInstance().getViewForId(reference);
+        if (view == null) {
+            promise.reject(Errors.VIEW_NOT_FOUND, "No view found for reference: " + reference);
+            return;
+        }
+        
+        try {
+            view.setUserInterfaceVisible(visible);
+            promise.resolve(true);
+        } catch (Exception e) {
+            promise.reject(Errors.OPERATION_FAILED, e.getMessage());
         }
     }
 

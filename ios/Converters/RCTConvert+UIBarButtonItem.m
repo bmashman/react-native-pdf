@@ -1,5 +1,5 @@
 //
-//  Copyright © 2019-2025 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2019-2026 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -22,6 +22,8 @@
     return @"thumbnailsButtonItem";
   } else if (barButtonItem == pdfController.documentEditorButtonItem) {
     return @"documentEditorButtonItem";
+  } else if (barButtonItem == pdfController.contentEditingButtonItem) {
+    return @"contentEditingButtonItem";
   } else if (barButtonItem == pdfController.printButtonItem) {
     return @"printButtonItem";
   } else if (barButtonItem == pdfController.openInButtonItem) {
@@ -60,6 +62,8 @@
     return pdfController.thumbnailsButtonItem;
   } else if ([barButtonItem isEqualToString:@"documentEditorButtonItem"]) {
     return pdfController.documentEditorButtonItem;
+  } else if ([barButtonItem isEqualToString:@"contentEditingButtonItem"]) {
+    return pdfController.contentEditingButtonItem;
   } else if ([barButtonItem isEqualToString:@"printButtonItem"]) {
     return pdfController.printButtonItem;
   } else if ([barButtonItem isEqualToString:@"openInButtonItem"]) {

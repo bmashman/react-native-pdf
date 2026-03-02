@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -179,6 +179,10 @@
     return [self.pdfController.annotationToolbarController hideToolbarAnimated:YES completion:NULL];
   }
   return true;
+}
+
+- (void)enterContentEditingMode {
+  [self.pdfController setViewMode:PSPDFViewModeContentEditing animated:YES];
 }
 
 - (BOOL)clearSelectedAnnotations {
@@ -417,190 +421,6 @@
   PSPDFPageIndex pageIndex = self.pdfController.pageIndex;
   PSPDFPageView *pageView = [self.pdfController pageViewForPageAtIndex:pageIndex];
   [self onStateChangedForPDFViewController:self.pdfController pageView:pageView pageAtIndex:pageIndex];
-}
-
-// MARK: - Instant JSON
-
-- (NSDictionary<NSString *, NSArray<NSDictionary *> *> *)getAnnotations:(PSPDFPageIndex)pageIndex type:(PSPDFAnnotationType)type error:(NSError *_Nullable *)error {
-  PSPDFDocument *document = self.pdfController.document;
-  VALIDATE_DOCUMENT(document, nil);
-  
-  NSArray <PSPDFAnnotation *> *annotations = [document annotationsForPageAtIndex:pageIndex type:type];
-  NSArray <NSDictionary *> *annotationsJSON = [RCTConvert instantJSONFromAnnotations:annotations error:error];
-  return @{@"annotations" : annotationsJSON};
-}
-
-- (BOOL)addAnnotation:(id)jsonAnnotation error:(NSError *_Nullable *)error {
-  NSData *data;
-  if ([jsonAnnotation isKindOfClass:NSString.class]) {
-    data = [jsonAnnotation dataUsingEncoding:NSUTF8StringEncoding];
-  } else if ([jsonAnnotation isKindOfClass:NSDictionary.class])  {
-    data = [NSJSONSerialization dataWithJSONObject:jsonAnnotation options:0 error:error];
-  } else {
-    NSLog(@"Invalid JSON Annotation.");
-    return NO;
-  }
-  
-  PSPDFDocument *document = self.pdfController.document;
-  VALIDATE_DOCUMENT(document, NO)
-  PSPDFDocumentProvider *documentProvider = document.documentProviders.firstObject;
-  
-  BOOL success = NO;
-  if (data) {
-    PSPDFAnnotation *annotation = [PSPDFAnnotation annotationFromInstantJSON:data documentProvider:documentProvider error:error];
-    if (annotation) {
-      success = [document addAnnotations:@[annotation] options:nil];
-    }
-  }
-  
-  if (!success) {
-    NSLog(@"Failed to add annotation.");
-  }
-  
-  return success;
-}
-
-- (BOOL)removeAnnotations:(NSArray<NSDictionary *> *)annotationsJSON {
-  PSPDFDocument *document = self.pdfController.document;
-  VALIDATE_DOCUMENT(document, NO)
-
-  NSMutableArray *annotationsToRemove = [NSMutableArray new];
-  NSArray<PSPDFAnnotation *> *allAnnotations = [[document allAnnotationsOfType:PSPDFAnnotationTypeAll].allValues valueForKeyPath:@"@unionOfArrays.self"];
-  for (PSPDFAnnotation *annotation in allAnnotations) {
-      for (NSDictionary *annotationJSON in annotationsJSON) {
-          // Try to remove the annotation according to either uuid or name
-          if ((![annotationJSON[@"uuid"] isEqual:[NSNull null]] &&
-               ![annotation.uuid isEqual:[NSNull null]] &&
-               [annotation.uuid isEqualToString:annotationJSON[@"uuid"]]) ||
-              (![annotationJSON[@"name"] isEqual:[NSNull null]] &&
-               ![annotation.name isEqual:[NSNull null]] &&
-               [annotation.name isEqualToString:annotationJSON[@"name"]])) {
-                    [annotationsToRemove addObject:annotation];
-                    break;
-               }
-        }
-  }
-  BOOL success = [document removeAnnotations:annotationsToRemove options:nil];
-  return success;
-}
-
-- (NSDictionary<NSString *, NSArray<NSDictionary *> *> *)getAllUnsavedAnnotationsWithError:(NSError *_Nullable *)error {
-  PSPDFDocument *document = self.pdfController.document;
-  VALIDATE_DOCUMENT(document, nil)
-  
-  PSPDFDocumentProvider *documentProvider = document.documentProviders.firstObject;
-  NSData *data = [document generateInstantJSONFromDocumentProvider:documentProvider error:error];
-  NSDictionary *annotationsJSON = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:error];
-  return annotationsJSON;
-}
-
-- (NSDictionary<NSString *, NSArray<NSDictionary *> *> *)getAllAnnotations:(PSPDFAnnotationType)type error:(NSError *_Nullable *)error {
-  PSPDFDocument *document = self.pdfController.document;
-  VALIDATE_DOCUMENT(document, nil)
-
-  NSArray<PSPDFAnnotation *> *annotations = [[document allAnnotationsOfType:type].allValues valueForKeyPath:@"@unionOfArrays.self"];
-  NSArray <NSDictionary *> *annotationsJSON = [RCTConvert instantJSONFromAnnotations:annotations error:error];
-  return @{@"annotations" : annotationsJSON};
-}
-
-- (BOOL)addAnnotations:(id)jsonAnnotations error:(NSError *_Nullable *)error {
-  NSData *data;
-  if ([jsonAnnotations isKindOfClass:NSString.class]) {
-    data = [jsonAnnotations dataUsingEncoding:NSUTF8StringEncoding];
-  } else if ([jsonAnnotations isKindOfClass:NSDictionary.class])  {
-    data = [NSJSONSerialization dataWithJSONObject:jsonAnnotations options:0 error:error];
-  } else {
-    NSLog(@"Invalid JSON Annotations.");
-    return NO;
-  }
-  
-  PSPDFDataContainerProvider *dataContainerProvider = [[PSPDFDataContainerProvider alloc] initWithData:data];
-  PSPDFDocument *document = self.pdfController.document;
-  VALIDATE_DOCUMENT(document, NO)
-  [document clearCache];
-  PSPDFDocumentProvider *documentProvider = document.documentProviders.firstObject;
-  BOOL success = [document applyInstantJSONFromDataProvider:dataContainerProvider toDocumentProvider:documentProvider lenient:NO error:error];
-  if (!success) {
-    NSLog(@"Failed to add annotations.");
-  }
-  
-  [self.pdfController reloadData];
-  return success;
-}
-
-- (BOOL)setAnnotationFlags:(NSString *)uuid flags:(NSArray<NSString *> *)flags {
-    
-    PSPDFDocument *document = self.pdfController.document;
-    VALIDATE_DOCUMENT(document, nil);
-    
-    NSArray<PSPDFAnnotation *> *allAnnotations = [[document allAnnotationsOfType:PSPDFAnnotationTypeAll].allValues valueForKeyPath:@"@unionOfArrays.self"];
-    for (PSPDFAnnotation *annotation in allAnnotations) {
-      if ([annotation.uuid isEqualToString:uuid] ||
-          (![annotation.name isEqual:[NSNull null]] &&
-           [annotation.name isEqualToString:uuid])) {
-          NSUInteger convertedFlags = [RCTConvert parseAnnotationFlags:flags];
-          [annotation setFlags:convertedFlags];
-          [document.documentProviders.firstObject.annotationManager updateAnnotations:@[annotation] animated:YES];
-          return YES;
-      }
-    }
-    return NO;
-}
-
-- (NSArray <NSString *> *)getAnnotationFlags:(NSString *)uuid {
-    
-    PSPDFDocument *document = self.pdfController.document;
-    VALIDATE_DOCUMENT(document, nil);
-    
-    NSArray<PSPDFAnnotation *> *allAnnotations = [[document allAnnotationsOfType:PSPDFAnnotationTypeAll].allValues valueForKeyPath:@"@unionOfArrays.self"];
-    for (PSPDFAnnotation *annotation in allAnnotations) {
-        if ([annotation.uuid isEqualToString:uuid] ||
-            (![annotation.name isEqual:[NSNull null]] &&
-             [annotation.name isEqualToString:uuid])) {
-          PSPDFAnnotationFlags flags = annotation.flags;
-          NSArray <NSString *>* convertedFlags = [RCTConvert convertAnnotationFlags:flags];
-          return convertedFlags;
-      }
-    }
-    return @[];
-}
-
-// MARK: - XFDF
-
-- (NSDictionary *)importXFDF:(NSString *)filePath withError:(NSError *_Nullable *)error {
-  
-    NSURL *externalAnnotationsFile = [RCTConvert parseURL:filePath];
-    PSPDFDocument *document = self.pdfController.document;
-    VALIDATE_DOCUMENT(document, nil)
-    
-    PSPDFDocumentProvider *documentProvider = document.documentProviders.firstObject;
-    PSPDFFileDataProvider *dataProvider = [[PSPDFFileDataProvider alloc] initWithFileURL:externalAnnotationsFile];
-
-    PSPDFXFDFParser *parser = [[PSPDFXFDFParser alloc] initWithDataProvider:dataProvider documentProvider:documentProvider];
-    NSArray<PSPDFAnnotation *> *annotations = [parser parseWithError:error];
-
-    BOOL result = [document addAnnotations:annotations options:nil];
-    NSDictionary *response = @{@"success" : @(result)};
-    return response;
-}
-
-- (NSDictionary *)exportXFDF:(NSString *)filePath withError:(NSError *_Nullable *)error {
-    
-    NSURL *externalAnnotationsFile = [RCTConvert parseURL:filePath];
-    PSPDFDocument *document = self.pdfController.document;
-    VALIDATE_DOCUMENT(document, nil)
-    
-    PSPDFDocumentProvider *documentProvider = document.documentProviders.firstObject;
-    
-    NSMutableArray<PSPDFAnnotation *> *annotations = [NSMutableArray<PSPDFAnnotation *> array];
-    for (NSArray<PSPDFAnnotation *> *pageAnnotations in [document allAnnotationsOfType:PSPDFAnnotationTypeAll].allValues) {
-        [annotations addObjectsFromArray:pageAnnotations];
-    }
-    
-    PSPDFFileDataSink *dataSink = [[PSPDFFileDataSink alloc] initWithFileURL:externalAnnotationsFile options:PSPDFDataSinkOptionNone error:error];
-    BOOL result = [[PSPDFXFDFWriter new] writeAnnotations:annotations toDataSink:dataSink documentProvider:documentProvider error:error];
-    NSDictionary *response = @{@"success" : @(result), @"filePath" : filePath};
-    return response;
 }
 
 // MARK: - Forms
@@ -902,6 +722,11 @@
     [_sessionStorage setExcludedAnnotations:annotations];
 }
 
+- (BOOL)setUserInterfaceVisible:(BOOL)visible {
+    [self.pdfController setUserInterfaceVisible:visible animated:YES];
+    return YES;
+}
+
 // MARK: - Helpers
 
 - (void)didSetProps:(NSArray<NSString *> *)changedProps {
@@ -1013,6 +838,53 @@
       }
       controller.documentInfoCoordinator.availableControllerOptions = [availableControllerOptions copy];
       }
+      
+    // Apply toolbar position configuration
+    if ([dictionary objectForKey:@"toolbarPosition"] || [dictionary objectForKey:@"supportedToolbarPositions"]) {
+        // Helper function to convert position string to enum
+        PSPDFFlexibleToolbarPosition (^convertPositionString)(NSString *) = ^PSPDFFlexibleToolbarPosition(NSString *positionString) {
+            if ([positionString isEqualToString:@"top"]) {
+                return PSPDFFlexibleToolbarPositionTop;
+            } else if ([positionString isEqualToString:@"left"]) {
+                return PSPDFFlexibleToolbarPositionLeft;
+            } else if ([positionString isEqualToString:@"right"]) {
+                return PSPDFFlexibleToolbarPositionRight;
+            }
+            return PSPDFFlexibleToolbarPositionTop;
+        };
+        
+        // Helper function to apply toolbar position configuration
+        void (^applyToolbarPosition)(PSPDFFlexibleToolbar *) = ^(PSPDFFlexibleToolbar *toolbar) {
+            if (toolbar != nil) {
+                // Set supported toolbar positions
+                if ([dictionary objectForKey:@"supportedToolbarPositions"]) {
+                    NSArray<NSString *> *positions = [dictionary objectForKey:@"supportedToolbarPositions"];
+                    PSPDFFlexibleToolbarPosition supportedPositions = 0;
+                    for (NSString *positionString in positions) {
+                        supportedPositions |= convertPositionString(positionString);
+                    }
+                    toolbar.supportedToolbarPositions = supportedPositions;
+                }
+                
+                // Set toolbar position
+                if ([dictionary objectForKey:@"toolbarPosition"]) {
+                    NSString *positionString = [dictionary objectForKey:@"toolbarPosition"];
+                    toolbar.toolbarPosition = convertPositionString(positionString);
+                }
+            }
+        };
+        
+        // Apply to annotation toolbar
+        PSPDFAnnotationToolbar *annotationToolbar = controller.annotationToolbarController.annotationToolbar;
+        applyToolbarPosition(annotationToolbar);
+        
+        // Apply to document editor toolbar
+        if (controller.documentEditorController != nil && 
+            controller.documentEditorController.toolbarController != nil) {
+            PSPDFFlexibleToolbar *documentEditorToolbar = controller.documentEditorController.toolbarController.documentEditorToolbar;
+            applyToolbarPosition(documentEditorToolbar);
+        }
+    }
    }
 }
 
