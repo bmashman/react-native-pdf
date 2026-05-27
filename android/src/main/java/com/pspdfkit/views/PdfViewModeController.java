@@ -33,7 +33,9 @@ import com.pspdfkit.ui.toolbar.grouping.MenuItemGroupingRule;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -42,7 +44,9 @@ import javax.annotation.Nullable;
  */
 class PdfViewModeController implements
     TextSelectionManager.OnTextSelectionModeChangeListener, TextSelectionManager.OnTextSelectionChangeListener,
-    ToolbarCoordinatorLayout.OnContextualToolbarLifecycleListener, FormEditingBar.OnFormEditingBarLifecycleListener {
+    ToolbarCoordinatorLayout.OnContextualToolbarLifecycleListener,
+    ToolbarCoordinatorLayout.OnContextualToolbarMovementListener,
+    FormEditingBar.OnFormEditingBarLifecycleListener {
 
     private final PdfView parent;
 
@@ -54,7 +58,17 @@ class PdfViewModeController implements
     @Nullable
     private MenuItemGroupingRule itemGroupingRule;
 
+    // Annotation selection contextual menu configuration (legacy behavior).
     private ContextualToolbarMenuItemConfig annotationSelectionMenuConfig;
+
+    // Text selection contextual menu configuration (React-driven).
+    @Nullable
+    private List<ContextualToolbarMenuItem> textSelectionCustomItems;
+    private boolean textSelectionRetainSuggestedMenuItems = true;
+    @Nullable
+    private ToolbarMenuItemListener textSelectionToolbarMenuItemListener;
+    @Nullable
+    private List<String> textSelectionStockActions;
 
     PdfViewModeController(@NonNull PdfView parent) {
         this.parent = parent;
@@ -72,6 +86,24 @@ class PdfViewModeController implements
      */
     public void setAnnotationSelectionMenuConfig(ContextualToolbarMenuItemConfig annotationSelectionMenuConfig) {
         this.annotationSelectionMenuConfig = annotationSelectionMenuConfig;
+    }
+
+    /**
+     * Sets the text selection contextual menu configuration used when text is selected.
+     */
+    public void setTextSelectionContextualMenu(@Nullable List<ContextualToolbarMenuItem> customItems,
+                                               boolean retainSuggestedMenuItems,
+                                               @Nullable ToolbarMenuItemListener listener) {
+        this.textSelectionCustomItems = customItems;
+        this.textSelectionRetainSuggestedMenuItems = retainSuggestedMenuItems;
+        this.textSelectionToolbarMenuItemListener = listener;
+    }
+
+    /**
+     * Sets the stock text selection actions (by key) that should be retained.
+     */
+    public void setTextSelectionStockActions(@Nullable List<String> stockActions) {
+        this.textSelectionStockActions = stockActions;
     }
 
     @Override
@@ -105,7 +137,9 @@ class PdfViewModeController implements
         // Apply toolbar position configuration
         String toolbarPosition = parent.getToolbarPosition();
         com.facebook.react.bridge.ReadableArray supportedPositions = parent.getSupportedToolbarPositions();
-        
+
+        ToolbarCoordinatorLayout.LayoutParams.Position appliedPosition = null;
+
         if (toolbarPosition != null || supportedPositions != null) {
             ToolbarCoordinatorLayout.LayoutParams.Position position = null;
             EnumSet<ToolbarCoordinatorLayout.LayoutParams.Position> supportedPositionsSet = null;
@@ -149,13 +183,18 @@ class PdfViewModeController implements
                 
                 // Create and set LayoutParams with position and supported positions
                 contextualToolbar.setLayoutParams(new ToolbarCoordinatorLayout.LayoutParams(finalPosition, supportedPositionsSet));
+                appliedPosition = finalPosition;
             } else if (position != null) {
                 // Only position is set, use setPosition method
                 contextualToolbar.setPosition(position);
+                appliedPosition = position;
             }
         }
-        
+
         if (contextualToolbar instanceof AnnotationCreationToolbar) {
+            if (appliedPosition != null) {
+                parent.setToolbarPosition(toolbarPositionString(appliedPosition));
+            }
             if (itemGroupingRule != null) {
                 contextualToolbar.setMenuItemGroupingRule(itemGroupingRule);
             }
@@ -175,10 +214,87 @@ class PdfViewModeController implements
                 contextualToolbar.setOnMenuItemClickListener(this.annotationSelectionMenuConfig.getToolbarMenuItemListener());
             }
         }
+        if (contextualToolbar instanceof com.pspdfkit.ui.toolbar.TextSelectionToolbar) {
+            if (this.textSelectionCustomItems != null) {
+                final List<ContextualToolbarMenuItem> currentItems = contextualToolbar.getMenuItems();
+                List<ContextualToolbarMenuItem> baseItems = new ArrayList<>();
+
+                boolean hasStockActions = textSelectionStockActions != null && !textSelectionStockActions.isEmpty();
+
+                if (textSelectionRetainSuggestedMenuItems) {
+                    // Keep all default suggested items; ignore any stock string filtering.
+                    baseItems.addAll(currentItems);
+                } else if (hasStockActions) {
+                    // Suggested items disabled, but specific stock actions requested as strings:
+                    // filter the current items down to only those stock actions.
+                    Set<Integer> allowedIds = new HashSet<>();
+                    for (String key : textSelectionStockActions) {
+                        if ("copy".equals(key)) {
+                            allowedIds.add(com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_copy);
+                        } else if ("highlight".equals(key)) {
+                            allowedIds.add(com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_highlight);
+                        } else if ("redaction".equals(key) || "redact".equals(key)) {
+                            allowedIds.add(com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_redact);
+                        } else if ("speak".equals(key)) {
+                            allowedIds.add(com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_speak);
+                        } else if ("search".equals(key)) {
+                            allowedIds.add(com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_search);
+                        } else if ("share".equals(key)) {
+                            allowedIds.add(com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_share);
+                        } else if ("link".equals(key)) {
+                            allowedIds.add(com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_link);
+                        }
+                    }
+
+                    for (ContextualToolbarMenuItem item : currentItems) {
+                        if (allowedIds.contains(item.getId())) {
+                            baseItems.add(item);
+                        }
+                    }
+                } // else: retainSuggestedMenuItems == false and no stock actions -> baseItems stays empty
+
+                List<ContextualToolbarMenuItem> finalItems = new ArrayList<>();
+                finalItems.addAll(baseItems);
+
+                // Append custom items if they are not already present.
+                for (ContextualToolbarMenuItem customItem : textSelectionCustomItems) {
+                    if (!finalItems.contains(customItem)) {
+                        finalItems.add(customItem);
+                    }
+                }
+
+                contextualToolbar.setMenuItems(finalItems);
+            }
+
+            if (this.textSelectionToolbarMenuItemListener != null) {
+                contextualToolbar.setOnMenuItemClickListener(this.textSelectionToolbarMenuItemListener);
+            }
+        }
+    }
+
+    private static String toolbarPositionString(@NonNull ToolbarCoordinatorLayout.LayoutParams.Position position) {
+        if (position == ToolbarCoordinatorLayout.LayoutParams.Position.TOP) {
+            return "top";
+        }
+        if (position == ToolbarCoordinatorLayout.LayoutParams.Position.LEFT) {
+            return "left";
+        }
+        if (position == ToolbarCoordinatorLayout.LayoutParams.Position.RIGHT) {
+            return "right";
+        }
+        return "top";
+    }
+
+    private void syncToolbarPositionFromContextualToolbar(@NonNull ContextualToolbar contextualToolbar) {
+        ToolbarCoordinatorLayout.LayoutParams.Position position = contextualToolbar.getPosition();
+        if (position != null) {
+            parent.setToolbarPosition(toolbarPositionString(position));
+        }
     }
 
     @Override
     public void onDisplayContextualToolbar(@NonNull ContextualToolbar contextualToolbar) {
+        syncToolbarPositionFromContextualToolbar(contextualToolbar);
         if (contextualToolbar instanceof AnnotationCreationToolbar) {
             annotationCreationActive = true;
         }
@@ -191,6 +307,7 @@ class PdfViewModeController implements
 
     @Override
     public void onRemoveContextualToolbar(@NonNull ContextualToolbar contextualToolbar) {
+        syncToolbarPositionFromContextualToolbar(contextualToolbar);
         if (contextualToolbar instanceof AnnotationCreationToolbar) {
             annotationCreationActive = false;
         }
@@ -199,6 +316,21 @@ class PdfViewModeController implements
         }
 
         parent.updateState();
+    }
+
+    @Override
+    public void onDragContextualToolbar(@NonNull ContextualToolbar contextualToolbar, int dx, int dy) {
+        syncToolbarPositionFromContextualToolbar(contextualToolbar);
+    }
+
+    @Override
+    public void onAttachContextualToolbar(@NonNull ContextualToolbar contextualToolbar) {
+        syncToolbarPositionFromContextualToolbar(contextualToolbar);
+    }
+
+    @Override
+    public void onDetachContextualToolbar(@NonNull ContextualToolbar contextualToolbar) {
+        syncToolbarPositionFromContextualToolbar(contextualToolbar);
     }
 
     @Override

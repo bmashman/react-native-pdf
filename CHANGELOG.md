@@ -1,3 +1,21 @@
+## 4.3.2 — 30 Apr 2026
+
+- Updated the `getConfiguration` API to return the current `toolbarPosition`. (J#HYB-991)
+- Fixes a crash that could occur during `NutrientView` initialization on iOS. (J#HYB-994)
+
+## 4.3.1 — 22 Apr 2026
+
+- Fixes a crash when setting the `toolbarPosition` without the Document Editor component in the Nutrient license. (J#HYB-991)
+
+## 4.3.0 — 17 Mar 2026
+
+- Adds the `onShouldExecuteAction` callback and `executeAction` API to `NutrientView` to control whether an annotation action should execute. (J#HYB-926)
+- Adds the `textSelectionContextualMenu` prop to `NutrientView` to customize the text selection menu button items. (J#HYB-846)
+- Adds the `setRotationOffset` API to `PDFDocument` to change page rotation. (J#HYB-944)
+- Updates for Nutrient Android SDK 11.1.1.
+- Updates for Nutrient iOS SDK 26.6.0.
+- Fixes an issue where the `onAnnotationTapped` callback did not fire reliably on iOS new architecture. (J#HYB-984)
+
 ## 4.2.0 — 11 Feb 2026
 
 - Removes the deprecated Annotation APIs from the `NutrientView` namespace, since they are available on `PDFDocument`. (J#HYB-945)

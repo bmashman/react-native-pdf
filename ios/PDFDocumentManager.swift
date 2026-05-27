@@ -11,50 +11,29 @@ import Foundation
 import React
 import PSPDFKit
 
-@objc public protocol PDFDocumentManagerDelegate {
+@objc public protocol PDFDocumentManagerDelegate: AnyObject {
     @objc optional func didReceiveAnnotationChange(change: String, annotations: Array<Annotation>)
     @objc optional func reloadControllerData()
 }
 
-private class WeakViewRef {
-    weak var view: RCTPSPDFKitView?
-    init(_ view: RCTPSPDFKitView) { self.view = view }
-}
-
 @objc(PDFDocumentManager) public class PDFDocumentManager: NSObject {
-    
-    var documents = [NSNumber:Document]()
+
     @objc public var delegate: PDFDocumentManagerDelegate?
-    private var viewByReference = [NSNumber: WeakViewRef]()
-    private let queue = DispatchQueue(label: "io.nutrient.reactnative.documentmanager")
-    
+
     private func getDocument(_ reference: NSNumber) -> Document? {
-        var result: Document?
-        queue.sync {
-            result = documents[reference]
-        }
-        return result
+        return PDFDocumentStore.getDocument(reference)
     }
-    
+
     private func getView(for reference: NSNumber) -> RCTPSPDFKitView? {
-        var result: RCTPSPDFKitView?
-        queue.sync {
-            result = viewByReference[reference]?.view
-        }
-        return result
+        return PDFDocumentStore.getView(for: reference)
     }
-    
+
     @objc public func setDocument(_ document: Document, reference: NSNumber) {
-        queue.async {
-            self.documents[reference] = document
-        }
+        PDFDocumentStore.setDocument(document, reference: reference)
     }
-    
+
     @objc public func setView(_ view: Any, forReference reference: NSNumber) {
-        guard let pdfView = view as? RCTPSPDFKitView else { return }
-        queue.async {
-            self.viewByReference[reference] = WeakViewRef(pdfView)
-        }
+        PDFDocumentStore.setView(view, forReference: reference)
     }
     
     @objc static public func requiresMainQueueSetup() -> Bool {
@@ -109,6 +88,38 @@ private class WeakViewRef {
         }
         SDK.shared.cache.invalidateImages(from: document, pageIndex: PageIndex(pageIndex))
         onSuccess(true)
+    }
+
+    /// Sets the display-only rotation offset for a page (0, 90, 180, or 270 degrees). Does not persist to the PDF.
+    @objc func setRotationOffset(_ reference: NSNumber, pageIndex: Int, rotation: Int, onSuccess: @escaping RCTPromiseResolveBlock, onError: @escaping RCTPromiseRejectBlock) -> Void {
+        guard let document = getDocument(reference) else {
+            onError("setRotationOffset", "Document is nil", nil)
+            return
+        }
+
+        let validRotations: [Int] = [0, 90, 180, 270]
+        guard validRotations.contains(rotation) else {
+            onError("setRotationOffset", "Rotation must be 0, 90, 180, or 270", nil)
+            return
+        }
+
+        guard let rotationValue = Rotation(rawValue: UInt(rotation)) else {
+            onError("setRotationOffset", "Invalid rotation value", nil)
+            return
+        }
+
+        guard let documentProvider = document.documentProviderForPage(at: PageIndex(pageIndex)) else {
+            onError("setRotationOffset", "Document provider not found for page", nil)
+            return
+        }
+
+        DispatchQueue.main.async {
+            documentProvider.setRotationOffset(rotationValue, forPageAt: PageIndex(pageIndex))
+            SDK.shared.cache.invalidateImages(from: document, pageIndex: PageIndex(pageIndex))
+            let callbackDelegate = PDFDocumentStore.getDelegate(for: reference) ?? self.delegate
+            callbackDelegate?.reloadControllerData?()
+            onSuccess(true)
+        }
     }
     
     @objc func invalidateCache(_ reference: NSNumber, onSuccess: @escaping RCTPromiseResolveBlock, onError: @escaping RCTPromiseRejectBlock) -> Void {
@@ -401,11 +412,12 @@ private class WeakViewRef {
                     }
                 }
                 
-                // Delegate to RCTPSPDFKitView to reload controller data
-                delegate?.reloadControllerData?()
+                // Delegate to RCTPSPDFKitView to reload controller data.
+                let callbackDelegate = PDFDocumentStore.getDelegate(for: reference) ?? self.delegate
+                callbackDelegate?.reloadControllerData?()
                 onSuccess(true)
                 // Emit the onAnnotationsChanged event since document.applyInstantJSON doesn't trigger the event on iOS
-                delegate?.didReceiveAnnotationChange?(change: "added", annotations: annotationArray)
+                callbackDelegate?.didReceiveAnnotationChange?(change: "added", annotations: annotationArray)
                 return
             }
             catch {
